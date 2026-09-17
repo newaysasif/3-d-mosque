@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #bom-modal,
+  #bom-modal * {
+    visibility: visible;
+  }
+  #bom-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    background: white !important;
+    color: black !important;
+  }
+  #bom-modal table {
+    color: black !important;
+  }
+  #bom-modal th, #bom-modal td {
+    color: black !important;
+    border-color: #cbd5e1 !important;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "3D Interior Design Studio",
+  "description": "Two-function architectural studio with 2D continuous sketching like Coohom and automatic 3D extrusion, structural column & tie beam grid engineering, WebGL rendering, and CAD floor plan tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
