@@ -6,6 +6,7 @@ import {
   PlacedFurnitureItem,
   RoomConfig,
   WallDirection,
+  WallVisibilityConfig,
 } from '../types';
 import { buildFurnitureModel } from './furnitureModels';
 import {
@@ -17,6 +18,19 @@ import {
   getMihrabArchPanelTexture,
   getCarvedWhiteJaliTexture,
   getIslamicDoorStarLatticeTexture,
+  getPersianIwanTileTexture,
+  getPersianKatibehFriezeTexture,
+  getPersianMuqarnasFacetTexture,
+  getPersianOrosiWindowTexture,
+  getPersianIzarehDadoTexture,
+  getQuranBookNicheTexture,
+  getIslamicPrayerClockTexture,
+  getTravertineAshlarTexture,
+  getWalnutArchitecturalWoodTexture,
+  getMashrabiyaScreenTexture,
+  getFloatingBronzeCalligraphyTexture,
+  getBookshelfCubbyTexture,
+  getModernBrassSconceTexture,
 } from './proceduralTextures';
 
 export interface SceneCallbacks {
@@ -1726,6 +1740,43 @@ export class SceneManager {
         this.extraMasjidMeshes.push(saffGroup);
       }
 
+      // -------------------------------------------------------------
+      // THREE SIDE WALLS (WEST, EAST, SOUTH) - LUXURY ISLAMIC INTERIOR ARCHITECTURE
+      // Supports:
+      // 1. Contemporary Mashrabiya & Walnut Timber (User uploaded reference theme with 5 spaces between columns on both long walls)
+      // 2. Persian Iwan (Pishtaq arches, Muqarnas, Haft Rangi, Orosi)
+      // -------------------------------------------------------------
+      const islamicWallStyle = mCfg.islamicWallStyle || 'contemporary-mashrabiya-timber';
+      if (islamicWallStyle === 'contemporary-mashrabiya-timber') {
+        this.buildContemporaryMashrabiyaWalls(
+          mCfg,
+          wallVis,
+          wallHeight,
+          wallThick,
+          P_qibla_left,
+          P_qibla_right,
+          P_back_left,
+          P_back_right,
+          P_gate_east,
+          P_gate_south,
+          isDiagonalGate
+        );
+      } else {
+        this.buildPersianIwanWalls(
+          mCfg,
+          wallVis,
+          wallHeight,
+          wallThick,
+          P_qibla_left,
+          P_qibla_right,
+          P_back_left,
+          P_back_right,
+          P_gate_east,
+          P_gate_south,
+          isDiagonalGate
+        );
+      }
+
       this.updateWallVisibility();
       return;
     }
@@ -1846,6 +1897,1116 @@ export class SceneManager {
     this.updateWallVisibility();
   }
 
+  // -------------------------------------------------------------
+  // CONTEMPORARY MASJID LUXURY INTERIOR ARCHITECTURE (THREE SIDE WALLS)
+  // Matching user's uploaded reference design:
+  // - Honed Cream Travertine Ashlar Masonry
+  // - Rich Architectural Walnut Timber Post-and-Beam Portals
+  // - Both Long Walls Feature Exactly Five Spaces (Bays) Between Columns
+  // - Monumental Rounded Arched Mashrabiya / Jali Windows with Intricate 12-Point Star Lattice & Daylight Glow
+  // - Floating 3D Sculpted Bronze Arabic Calligraphy Frieze ("...وَمَن تَطَوَّعَ خَيْرًا..." & "الْمُغْنِي", "الْمَانِعُ") with Linear LED Cove Uplight
+  // - Recessed Contemplation Niches with Low Built-in Walnut Bookshelves for Holy Qurans
+  // - Handcrafted Folding Walnut Rehal Stands with Open Illuminated Holy Quran
+  // - Modern Pierced Brass Star Wall Sconces Casting Star Geometric Light Rays
+  // - Walnut Encasement on Structural Columns with Floor Uplighting
+  // -------------------------------------------------------------
+  private buildContemporaryMashrabiyaWalls(
+    mCfg: any,
+    wallVis: WallVisibilityConfig,
+    wallHeight: number,
+    wallThick: number,
+    P_qibla_left: { x: number; z: number },
+    P_qibla_right: { x: number; z: number },
+    P_back_left: { x: number; z: number },
+    P_back_right: { x: number; z: number },
+    P_gate_east: { x: number; z: number },
+    P_gate_south: { x: number; z: number },
+    isDiagonalGate: boolean
+  ) {
+    if (mCfg.traditionalIslamicWalls === false) return;
+    const style = mCfg.islamicWallStyle || 'contemporary-mashrabiya-timber';
+    if (style !== 'contemporary-mashrabiya-timber') return;
+
+    const cCfg = mCfg.contemporaryMashrabiyaConfig || {};
+    const showPortals = cCfg.showTimberPostAndBeamPortals !== false;
+    const showMashrabiya = cCfg.showArchedMashrabiyaWindows !== false;
+    const showAshlar = cCfg.showAshlarTravertineWalls !== false;
+    const showCalligraphy = cCfg.showFloatingBronzeCalligraphy !== false;
+    const showSconces = cCfg.showModernBrassSconces !== false;
+    const showBookshelves = cCfg.showLowQuranBookshelves !== false;
+    const showCoveLighting = cCfg.showCoveLighting !== false;
+    const woodColorHex = cCfg.woodFinishColor || '#382417';
+
+    // Materials and Textures
+    const travertineTex = getTravertineAshlarTexture();
+    const travertineMat = new THREE.MeshStandardMaterial({
+      map: travertineTex,
+      roughness: 0.42,
+      metalness: 0.05,
+    });
+
+    const walnutTex = getWalnutArchitecturalWoodTexture();
+    const walnutMat = new THREE.MeshStandardMaterial({
+      map: walnutTex,
+      color: new THREE.Color(woodColorHex),
+      roughness: 0.55,
+      metalness: 0.08,
+    });
+
+    const mashrabiyaTex = getMashrabiyaScreenTexture();
+    const mashrabiyaMat = new THREE.MeshStandardMaterial({
+      map: mashrabiyaTex,
+      roughness: 0.28,
+      metalness: 0.12,
+      emissive: new THREE.Color('#fffaee'),
+      emissiveIntensity: 0.35,
+      side: THREE.DoubleSide,
+    });
+
+    const calligraphyTex = getFloatingBronzeCalligraphyTexture();
+    const calligraphyMat = new THREE.MeshStandardMaterial({
+      map: calligraphyTex,
+      roughness: 0.3,
+      metalness: 0.35,
+      side: THREE.DoubleSide,
+    });
+
+    const bookshelfTex = getBookshelfCubbyTexture();
+    const bookshelfMat = new THREE.MeshStandardMaterial({
+      map: bookshelfTex,
+      roughness: 0.45,
+      metalness: 0.1,
+    });
+
+    const sconceTex = getModernBrassSconceTexture();
+    const sconceMat = new THREE.MeshStandardMaterial({
+      map: sconceTex,
+      roughness: 0.3,
+      metalness: 0.8,
+      emissive: new THREE.Color('#ffe8b3'),
+      emissiveIntensity: 0.4,
+    });
+
+    const bronzeMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#946f49'),
+      roughness: 0.28,
+      metalness: 0.88,
+    });
+
+    const warmCoveLedMat = new THREE.MeshBasicMaterial({
+      color: 0xffeab3,
+    });
+
+    // Helper to build contemporary bay segment
+    const buildContemporaryWallSegment = (
+      startPt: { x: number; z: number },
+      endPt: { x: number; z: number },
+      wallDir: 'west' | 'east' | 'south',
+      bayCount: number
+    ) => {
+      const dx = endPt.x - startPt.x;
+      const dz = endPt.z - startPt.z;
+      const totalLen = Math.hypot(dx, dz);
+      if (totalLen < 2.5) return;
+
+      const tx = dx / totalLen;
+      const tz = dz / totalLen;
+      const nx = -tz;
+      const nz = tx;
+      const rotY = Math.atan2(-tz, tx);
+
+      const wallInwardOffset = wallThick / 2 + 0.02;
+
+      // 1. CONTINUOUS UPPER FLOATING BRONZE CALLIGRAPHY FRIEZE & LED COVE
+      if (showCalligraphy) {
+        const friezeH = 0.76;
+        const friezeY = wallHeight - 0.58;
+        const friezeMidX = (startPt.x + endPt.x) / 2 + nx * wallInwardOffset;
+        const friezeMidZ = (startPt.z + endPt.z) / 2 + nz * wallInwardOffset;
+
+        const friezeGeo = new THREE.BoxGeometry(totalLen, friezeH, 0.04);
+        const friezeMesh = new THREE.Mesh(friezeGeo, calligraphyMat);
+        friezeMesh.position.set(friezeMidX, friezeY, friezeMidZ);
+        friezeMesh.rotation.y = rotY;
+        friezeMesh.castShadow = true;
+        friezeMesh.receiveShadow = true;
+        friezeMesh.userData = { wallDir };
+        this.scene.add(friezeMesh);
+        this.extraMasjidMeshes.push(friezeMesh);
+
+        // Continuous linear LED cove strip beneath the calligraphy letters
+        if (showCoveLighting) {
+          const ledGeo = new THREE.BoxGeometry(totalLen, 0.035, 0.05);
+          const ledMesh = new THREE.Mesh(ledGeo, warmCoveLedMat);
+          ledMesh.position.set(
+            friezeMidX + nx * 0.025,
+            friezeY - friezeH / 2 + 0.02,
+            friezeMidZ + nz * 0.025
+          );
+          ledMesh.rotation.y = rotY;
+          ledMesh.userData = { wallDir };
+          this.scene.add(ledMesh);
+          this.extraMasjidMeshes.push(ledMesh);
+
+          // Subtle ambient cove wash light
+          const coveLight = new THREE.PointLight(0xffe6aa, 0.45, 6.0, 1.6);
+          coveLight.position.set(
+            friezeMidX + nx * 0.25,
+            friezeY - 0.1,
+            friezeMidZ + nz * 0.25
+          );
+          coveLight.userData = { wallDir };
+          this.scene.add(coveLight);
+          this.extraMasjidMeshes.push(coveLight);
+        }
+
+        // Heavy walnut bottom header / cornice shelf
+        const shelfGeo = new THREE.BoxGeometry(totalLen + 0.08, 0.12, 0.28);
+        const shelfMesh = new THREE.Mesh(shelfGeo, walnutMat);
+        shelfMesh.position.set(
+          friezeMidX + nx * 0.1,
+          friezeY - friezeH / 2 - 0.06,
+          friezeMidZ + nz * 0.1
+        );
+        shelfMesh.rotation.y = rotY;
+        shelfMesh.castShadow = true;
+        shelfMesh.receiveShadow = true;
+        shelfMesh.userData = { wallDir };
+        this.scene.add(shelfMesh);
+        this.extraMasjidMeshes.push(shelfMesh);
+      }
+
+      // 2. DISCRETE BAYS (EXACTLY 5 SPACES ON BOTH LONG WALLS!)
+      const bayW = totalLen / bayCount;
+      const portalBeamH = 0.45;
+      const portalBeamY = wallHeight - 1.45;
+      const portalClearH = portalBeamY - portalBeamH / 2;
+
+      for (let b = 0; b < bayCount; b++) {
+        const sDist = (b + 0.5) * bayW;
+        const bayMidX = startPt.x + tx * sDist + nx * wallInwardOffset;
+        const bayMidZ = startPt.z + tz * sDist + nz * wallInwardOffset;
+
+        // Post-and-beam portal casing
+        if (showPortals) {
+          // Upper monumental timber lintel beam
+          const lintelGeo = new THREE.BoxGeometry(bayW - 0.08, portalBeamH, 0.24);
+          const lintelMesh = new THREE.Mesh(lintelGeo, walnutMat);
+          lintelMesh.position.set(bayMidX + nx * 0.08, portalBeamY, bayMidZ + nz * 0.08);
+          lintelMesh.rotation.y = rotY;
+          lintelMesh.castShadow = true;
+          lintelMesh.receiveShadow = true;
+          lintelMesh.userData = { wallDir };
+          this.scene.add(lintelMesh);
+          this.extraMasjidMeshes.push(lintelMesh);
+
+          // Left timber pilaster
+          const colW = 0.34;
+          const colGeo = new THREE.BoxGeometry(colW, portalClearH, 0.22);
+          const leftColMesh = new THREE.Mesh(colGeo, walnutMat);
+          leftColMesh.position.set(
+            startPt.x + tx * (b * bayW + colW / 2) + nx * (wallInwardOffset + 0.08),
+            portalClearH / 2,
+            startPt.z + tz * (b * bayW + colW / 2) + nz * (wallInwardOffset + 0.08)
+          );
+          leftColMesh.rotation.y = rotY;
+          leftColMesh.castShadow = true;
+          leftColMesh.receiveShadow = true;
+          leftColMesh.userData = { wallDir };
+          this.scene.add(leftColMesh);
+          this.extraMasjidMeshes.push(leftColMesh);
+
+          // Right timber pilaster
+          const rightColMesh = new THREE.Mesh(colGeo, walnutMat);
+          rightColMesh.position.set(
+            startPt.x + tx * ((b + 1) * bayW - colW / 2) + nx * (wallInwardOffset + 0.08),
+            portalClearH / 2,
+            startPt.z + tz * ((b + 1) * bayW - colW / 2) + nz * (wallInwardOffset + 0.08)
+          );
+          rightColMesh.rotation.y = rotY;
+          rightColMesh.castShadow = true;
+          rightColMesh.receiveShadow = true;
+          rightColMesh.userData = { wallDir };
+          this.scene.add(rightColMesh);
+          this.extraMasjidMeshes.push(rightColMesh);
+
+          // Travertine ashlar wall panel between pilasters
+          if (showAshlar) {
+            const ashlarGeo = new THREE.BoxGeometry(bayW - colW * 2, portalClearH, 0.04);
+            const ashlarMesh = new THREE.Mesh(ashlarGeo, travertineMat);
+            ashlarMesh.position.set(bayMidX, portalClearH / 2, bayMidZ);
+            ashlarMesh.rotation.y = rotY;
+            ashlarMesh.receiveShadow = true;
+            ashlarMesh.userData = { wallDir };
+            this.scene.add(ashlarMesh);
+            this.extraMasjidMeshes.push(ashlarMesh);
+          }
+        }
+
+        // BAY-SPECIFIC ARCHITECTURE (Composition along the 5 spaces):
+        // Bay 0 & Bay 1: Monumental Arched Mashrabiya Windows
+        // Bay 2: Grand Recessed Ashlar Niche with 3D Sculpted Bronze Calligraphy & Floor Uplight
+        // Bay 3: Contemplation & Quran Recitation Niche with Low Timber Bookshelf & Rehal
+        // Bay 4: Companion Arched Mashrabiya Window
+        const isMashrabiyaBay = (b === 0 || b === 1 || b === 4) && showMashrabiya;
+        const isCalligraphyNicheBay = b === 2;
+        const isQuranNicheBay = b === 3 && showBookshelves;
+
+        if (isMashrabiyaBay) {
+          // Monumental Arched Mashrabiya Window Portal
+          const winW = Math.min(2.4, (bayW - 0.75));
+          const winH = 2.95;
+          const winY = winH / 2 + 0.35;
+
+          // Main Mashrabiya star lattice screen
+          const screenGeo = new THREE.BoxGeometry(winW, winH, 0.05);
+          const screenMesh = new THREE.Mesh(screenGeo, mashrabiyaMat);
+          screenMesh.position.set(bayMidX + nx * 0.03, winY, bayMidZ + nz * 0.03);
+          screenMesh.rotation.y = rotY;
+          screenMesh.castShadow = true;
+          screenMesh.receiveShadow = true;
+          screenMesh.userData = { wallDir };
+          this.scene.add(screenMesh);
+          this.extraMasjidMeshes.push(screenMesh);
+
+          // Walnut arch head / header casing
+          const archCasingGeo = new THREE.CylinderGeometry(winW / 2 + 0.12, winW / 2 + 0.12, 0.15, 24, 1, false, 0, Math.PI);
+          const archCasingMesh = new THREE.Mesh(archCasingGeo, walnutMat);
+          archCasingMesh.position.set(bayMidX + nx * 0.04, winY + winH / 2, bayMidZ + nz * 0.04);
+          archCasingMesh.rotation.y = rotY;
+          archCasingMesh.rotation.z = Math.PI / 2;
+          archCasingMesh.userData = { wallDir };
+          this.scene.add(archCasingMesh);
+          this.extraMasjidMeshes.push(archCasingMesh);
+
+          // Illuminated white lower window sill (as in reference photo)
+          const sillMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          const sillGeo = new THREE.BoxGeometry(winW + 0.08, 0.28, 0.18);
+          const sillMesh = new THREE.Mesh(sillGeo, sillMat);
+          sillMesh.position.set(bayMidX + nx * 0.07, 0.28 / 2, bayMidZ + nz * 0.07);
+          sillMesh.rotation.y = rotY;
+          sillMesh.userData = { wallDir };
+          this.scene.add(sillMesh);
+          this.extraMasjidMeshes.push(sillMesh);
+
+          // Natural warm sunlight spill through mashrabiya lattice
+          const sunLight = new THREE.PointLight(0xfffae6, 0.55, 6.5, 1.4);
+          sunLight.position.set(bayMidX + nx * 0.6, winY + 0.4, bayMidZ + nz * 0.6);
+          sunLight.userData = { wallDir };
+          this.scene.add(sunLight);
+          this.extraMasjidMeshes.push(sunLight);
+        } else if (isCalligraphyNicheBay) {
+          // Center Bay - 3D Sculpted Bronze Calligraphy Medallion on Recessed Travertine
+          const panelW = bayW - 0.8;
+          const panelH = portalClearH - 0.4;
+          const panelY = panelH / 2 + 0.2;
+
+          // Recessed stone niche frame
+          const nicheFrameGeo = new THREE.BoxGeometry(panelW, panelH, 0.08);
+          const nicheFrameMesh = new THREE.Mesh(nicheFrameGeo, travertineMat);
+          nicheFrameMesh.position.set(bayMidX - nx * 0.04, panelY, bayMidZ - nz * 0.04);
+          nicheFrameMesh.rotation.y = rotY;
+          nicheFrameMesh.receiveShadow = true;
+          nicheFrameMesh.userData = { wallDir };
+          this.scene.add(nicheFrameMesh);
+          this.extraMasjidMeshes.push(nicheFrameMesh);
+
+          // 3D Sculpted Bronze Calligraphy Medallion (Ayatul Kursi / Allah)
+          const medRadius = 0.58;
+          const medGeo = new THREE.CylinderGeometry(medRadius, medRadius, 0.06, 32);
+          const medMesh = new THREE.Mesh(medGeo, bronzeMat);
+          medMesh.position.set(bayMidX + nx * 0.02, panelY + 0.35, bayMidZ + nz * 0.02);
+          medMesh.rotation.y = rotY;
+          medMesh.rotation.x = Math.PI / 2;
+          medMesh.castShadow = true;
+          medMesh.userData = { wallDir };
+          this.scene.add(medMesh);
+          this.extraMasjidMeshes.push(medMesh);
+
+          // Inner high-relief Arabic calligraphy face
+          const medFaceGeo = new THREE.CircleGeometry(medRadius * 0.92, 32);
+          const medFaceMesh = new THREE.Mesh(medFaceGeo, calligraphyMat);
+          medFaceMesh.position.set(bayMidX + nx * 0.055, panelY + 0.35, bayMidZ + nz * 0.055);
+          medFaceMesh.rotation.y = rotY;
+          medFaceMesh.userData = { wallDir };
+          this.scene.add(medFaceMesh);
+          this.extraMasjidMeshes.push(medFaceMesh);
+
+          // Architectural floor uplight grazing stone upward
+          const upLight = new THREE.SpotLight(0xffe8ba, 0.85, 5.0, Math.PI / 4, 0.5, 1.2);
+          upLight.position.set(bayMidX + nx * 0.45, 0.08, bayMidZ + nz * 0.45);
+          upLight.target.position.set(bayMidX, panelY + 0.5, bayMidZ);
+          this.scene.add(upLight.target);
+          this.scene.add(upLight);
+          this.extraMasjidMeshes.push(upLight);
+
+          // Flanking modern brass geometric star wall sconces
+          if (showSconces) {
+            [-panelW * 0.38, panelW * 0.38].forEach((xOff) => {
+              const sx = bayMidX + tx * xOff + nx * 0.12;
+              const sz = bayMidZ + tz * xOff + nz * 0.12;
+              const sconceGeo = new THREE.BoxGeometry(0.18, 0.34, 0.09);
+              const sconceMesh = new THREE.Mesh(sconceGeo, sconceMat);
+              sconceMesh.position.set(sx, panelY, sz);
+              sconceMesh.rotation.y = rotY;
+              sconceMesh.userData = { wallDir };
+              this.scene.add(sconceMesh);
+              this.extraMasjidMeshes.push(sconceMesh);
+
+              const sconceLight = new THREE.PointLight(0xffd580, 0.45, 3.2, 1.6);
+              sconceLight.position.set(sx + nx * 0.1, panelY, sz + nz * 0.1);
+              sconceLight.userData = { wallDir };
+              this.scene.add(sconceLight);
+              this.extraMasjidMeshes.push(sconceLight);
+            });
+          }
+        } else if (isQuranNicheBay) {
+          // Bay 3 - Low Built-in Walnut Bookshelves for Holy Qurans & Folding Rehal Stand
+          const shelfW = bayW - 0.85;
+          const shelfH = 0.52;
+          const shelfD = 0.32;
+          const shelfY = shelfH / 2;
+
+          // Walnut Bookshelf Cabinet
+          const shelfGeo = new THREE.BoxGeometry(shelfW, shelfH, shelfD);
+          const shelfMesh = new THREE.Mesh(shelfGeo, walnutMat);
+          shelfMesh.position.set(bayMidX + nx * (shelfD / 2), shelfY, bayMidZ + nz * (shelfD / 2));
+          shelfMesh.rotation.y = rotY;
+          shelfMesh.castShadow = true;
+          shelfMesh.receiveShadow = true;
+          shelfMesh.userData = { wallDir };
+          this.scene.add(shelfMesh);
+          this.extraMasjidMeshes.push(shelfMesh);
+
+          // Front Quran books texture display
+          const booksFrontGeo = new THREE.PlaneGeometry(shelfW - 0.08, shelfH - 0.08);
+          const booksFrontMesh = new THREE.Mesh(booksFrontGeo, bookshelfMat);
+          booksFrontMesh.position.set(
+            bayMidX + nx * (shelfD + 0.005),
+            shelfY,
+            bayMidZ + nz * (shelfD + 0.005)
+          );
+          booksFrontMesh.rotation.y = rotY;
+          booksFrontMesh.userData = { wallDir };
+          this.scene.add(booksFrontMesh);
+          this.extraMasjidMeshes.push(booksFrontMesh);
+
+          // Folding walnut Rehal stand with open illuminated Quran
+          const rehalStandMat = new THREE.MeshStandardMaterial({ color: 0x42291a, roughness: 0.5 });
+          const rehalLeftGeo = new THREE.BoxGeometry(0.38, 0.025, 0.28);
+          const rehalLeft = new THREE.Mesh(rehalLeftGeo, rehalStandMat);
+          rehalLeft.position.set(bayMidX + nx * 0.55, shelfH + 0.15, bayMidZ + nz * 0.55);
+          rehalLeft.rotation.y = rotY;
+          rehalLeft.rotation.z = Math.PI * 0.18;
+          rehalLeft.userData = { wallDir };
+          this.scene.add(rehalLeft);
+          this.extraMasjidMeshes.push(rehalLeft);
+
+          const rehalRight = new THREE.Mesh(rehalLeftGeo, rehalStandMat);
+          rehalRight.position.set(bayMidX + nx * 0.55, shelfH + 0.15, bayMidZ + nz * 0.55);
+          rehalRight.rotation.y = rotY;
+          rehalRight.rotation.z = -Math.PI * 0.18;
+          rehalRight.userData = { wallDir };
+          this.scene.add(rehalRight);
+          this.extraMasjidMeshes.push(rehalRight);
+
+          // Open Quran pages with gilded Arabic text
+          const bookPageMat = new THREE.MeshStandardMaterial({
+            color: 0xfffae8,
+            roughness: 0.4,
+            emissive: 0x332a10,
+          });
+          const pageLeftGeo = new THREE.BoxGeometry(0.18, 0.015, 0.24);
+          const pageLeft = new THREE.Mesh(pageLeftGeo, bookPageMat);
+          pageLeft.position.set(bayMidX + nx * 0.55 - 0.07, shelfH + 0.18, bayMidZ + nz * 0.55);
+          pageLeft.rotation.y = rotY;
+          pageLeft.rotation.z = Math.PI * 0.18;
+          pageLeft.userData = { wallDir };
+          this.scene.add(pageLeft);
+          this.extraMasjidMeshes.push(pageLeft);
+
+          const pageRight = new THREE.Mesh(pageLeftGeo, bookPageMat);
+          pageRight.position.set(bayMidX + nx * 0.55 + 0.07, shelfH + 0.18, bayMidZ + nz * 0.55);
+          pageRight.rotation.y = rotY;
+          pageRight.rotation.z = -Math.PI * 0.18;
+          pageRight.userData = { wallDir };
+          this.scene.add(pageRight);
+          this.extraMasjidMeshes.push(pageRight);
+
+          // Reading spot light
+          const readLight = new THREE.PointLight(0xffe8ba, 0.55, 3.8, 1.5);
+          readLight.position.set(bayMidX + nx * 0.65, shelfH + 0.8, bayMidZ + nz * 0.65);
+          readLight.userData = { wallDir };
+          this.scene.add(readLight);
+          this.extraMasjidMeshes.push(readLight);
+
+          // Modern star brass sconce on wall above bookshelf
+          if (showSconces) {
+            const sconceGeo = new THREE.BoxGeometry(0.2, 0.36, 0.09);
+            const sconceMesh = new THREE.Mesh(sconceGeo, sconceMat);
+            sconceMesh.position.set(bayMidX + nx * 0.09, portalClearH * 0.65, bayMidZ + nz * 0.09);
+            sconceMesh.rotation.y = rotY;
+            sconceMesh.userData = { wallDir };
+            this.scene.add(sconceMesh);
+            this.extraMasjidMeshes.push(sconceMesh);
+          }
+        }
+      }
+    };
+
+    // Build Long Walls: Exactly 5 spaces between columns on both long walls per user specification!
+    buildContemporaryWallSegment(P_qibla_left, P_back_left, 'west', 5);
+    buildContemporaryWallSegment(P_qibla_right, P_gate_east, 'east', 5);
+
+    // Build South Wall (Back Wall): 4 spaces
+    const southEnd = isDiagonalGate ? P_gate_south : P_back_right;
+    buildContemporaryWallSegment(P_back_left, southEnd, 'south', 4);
+  }
+
+  // -------------------------------------------------------------
+  // PERSIAN IWAN ARCHITECTURAL INTERIOR DESIGN (THREE SIDE WALLS)
+  // Applied to West, East, and South walls (every wall except Qibla/North).
+  // Authentic Safavid / Timurid Isfahan Grand Mosque Style:
+  // - Grand Pishtaq Arches with Lapis Lazuli & Gold Moulding
+  // - Haft-Rangi (Seven-Color) Glazed Mosaic Ceramic Spandrels
+  // - 3-Tier Corbeled Muqarnas Stalactite Vaulting (مقرنس کاری)
+  // - Traditional Orosi Stained-Glass Windows with 12-point Girih Fretwork (پنجره ارسی)
+  // - Recessed Taqcheh Quran Alcoves with illuminated Mushaf on folding Rehal stand
+  // - Integrated Islamic Digital Prayer Time Board & Carved Timber Shoe Alcoves
+  // - Polished Yazd Alabaster Izareh Wainscot with Turquoise Glazed Cresting
+  // - Continuous Katibeh Calligraphy Frieze (Thuluth Quranic text on Royal Cobalt)
+  // - Suspended Pierced Brass Persian Lanterns (Cheragh / Qandil) with golden light
+  // -------------------------------------------------------------
+  private buildPersianIwanWalls(
+    mCfg: any,
+    wallVis: WallVisibilityConfig,
+    wallHeight: number,
+    wallThick: number,
+    P_qibla_left: { x: number; z: number },
+    P_qibla_right: { x: number; z: number },
+    P_back_left: { x: number; z: number },
+    P_back_right: { x: number; z: number },
+    P_gate_east: { x: number; z: number },
+    P_gate_south: { x: number; z: number },
+    isDiagonalGate: boolean
+  ) {
+    if (mCfg.traditionalIslamicWalls === false) return;
+    const style = mCfg.islamicWallStyle || 'persian-iwan';
+    if (style !== 'persian-iwan') return;
+
+    const pIwanCfg = mCfg.persianIwanConfig || {};
+    const showMuqarnas = pIwanCfg.showMuqarnasVaulting !== false;
+    const showOrosi = pIwanCfg.showOrosiStainedGlass !== false;
+    const showTaqcheh = pIwanCfg.showTaqchehQuranAlcoves !== false;
+    const showLamps = pIwanCfg.showPersianLamps !== false;
+    const showIzareh = pIwanCfg.showMarbleIzareh !== false;
+    const showKatibeh = pIwanCfg.showPersianKatibehFrieze !== false;
+    const accentColor = pIwanCfg.accentColor || '#00a896';
+
+    // Textures and Materials
+    const tileTex = getPersianIwanTileTexture();
+    const tileMat = new THREE.MeshStandardMaterial({
+      map: tileTex,
+      roughness: 0.32,
+      metalness: 0.18,
+    });
+
+    const friezeTex = getPersianKatibehFriezeTexture();
+    const friezeMat = new THREE.MeshStandardMaterial({
+      map: friezeTex,
+      roughness: 0.28,
+      metalness: 0.2,
+    });
+
+    const muqarnasTex = getPersianMuqarnasFacetTexture();
+    const muqarnasMat = new THREE.MeshStandardMaterial({
+      map: muqarnasTex,
+      roughness: 0.38,
+      metalness: 0.24,
+    });
+
+    const orosiTex = getPersianOrosiWindowTexture();
+    const orosiMat = new THREE.MeshStandardMaterial({
+      map: orosiTex,
+      roughness: 0.18,
+      metalness: 0.12,
+      transparent: true,
+      opacity: 0.95,
+    });
+
+    const izarehTex = getPersianIzarehDadoTexture();
+    const izarehMat = new THREE.MeshStandardMaterial({
+      map: izarehTex,
+      roughness: 0.25,
+      metalness: 0.1,
+    });
+
+    const goldMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#d4af37'),
+      roughness: 0.25,
+      metalness: 0.85,
+    });
+
+    const lapisMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#091e3e'),
+      roughness: 0.35,
+      metalness: 0.25,
+    });
+
+    const turquoiseMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(accentColor),
+      roughness: 0.3,
+      metalness: 0.35,
+    });
+
+    const darkWoodMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#24150c'),
+      roughness: 0.65,
+      metalness: 0.05,
+    });
+
+    const marbleMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#faf8f2'),
+      roughness: 0.22,
+      metalness: 0.04,
+    });
+
+    const quranNicheTex = getQuranBookNicheTexture();
+    const quranNicheMat = new THREE.MeshStandardMaterial({
+      map: quranNicheTex,
+      roughness: 0.4,
+      metalness: 0.2,
+    });
+
+    const prayerClockTex = getIslamicPrayerClockTexture();
+    const prayerClockMat = new THREE.MeshStandardMaterial({
+      map: prayerClockTex,
+      roughness: 0.2,
+      metalness: 0.3,
+    });
+
+    // Helper to build Persian Iwan facade along any wall segment
+    const buildIwanWallSegment = (
+      startPt: { x: number; z: number },
+      endPt: { x: number; z: number },
+      wallDir: 'west' | 'east' | 'south',
+      bayCount: number
+    ) => {
+      const dx = endPt.x - startPt.x;
+      const dz = endPt.z - startPt.z;
+      const totalLen = Math.hypot(dx, dz);
+      if (totalLen < 2.5) return;
+
+      const tx = dx / totalLen;
+      const tz = dz / totalLen;
+      const nx = -tz;
+      const nz = tx;
+      const rotY = Math.atan2(-tz, tx);
+
+      const wallInwardOffset = wallThick / 2 + 0.02;
+
+      // 1. CONTINUOUS UPPER PERSIAN KATIBEH CALLIGRAPHY FRIEZE
+      if (showKatibeh) {
+        const friezeH = 0.58;
+        const friezeY = wallHeight - 0.48;
+        const friezeMidX = (startPt.x + endPt.x) / 2 + nx * wallInwardOffset;
+        const friezeMidZ = (startPt.z + endPt.z) / 2 + nz * wallInwardOffset;
+
+        const friezeGeo = new THREE.BoxGeometry(totalLen, friezeH, 0.04);
+        const friezeMesh = new THREE.Mesh(friezeGeo, friezeMat);
+        friezeMesh.position.set(friezeMidX, friezeY, friezeMidZ);
+        friezeMesh.rotation.y = rotY;
+        friezeMesh.castShadow = true;
+        friezeMesh.receiveShadow = true;
+        friezeMesh.userData = { wallDir };
+        this.scene.add(friezeMesh);
+        this.extraMasjidMeshes.push(friezeMesh);
+
+        // Gilded upper and lower cornice mouldings
+        const corniceTopGeo = new THREE.BoxGeometry(totalLen + 0.05, 0.1, 0.09);
+        const corniceTopMesh = new THREE.Mesh(corniceTopGeo, goldMat);
+        corniceTopMesh.position.set(
+          friezeMidX + nx * 0.02,
+          friezeY + friezeH / 2 + 0.05,
+          friezeMidZ + nz * 0.02
+        );
+        corniceTopMesh.rotation.y = rotY;
+        corniceTopMesh.userData = { wallDir };
+        this.scene.add(corniceTopMesh);
+        this.extraMasjidMeshes.push(corniceTopMesh);
+
+        const corniceBtmGeo = new THREE.BoxGeometry(totalLen + 0.05, 0.06, 0.08);
+        const corniceBtmMesh = new THREE.Mesh(corniceBtmGeo, goldMat);
+        corniceBtmMesh.position.set(
+          friezeMidX + nx * 0.015,
+          friezeY - friezeH / 2 - 0.03,
+          friezeMidZ + nz * 0.015
+        );
+        corniceBtmMesh.rotation.y = rotY;
+        corniceBtmMesh.userData = { wallDir };
+        this.scene.add(corniceBtmMesh);
+        this.extraMasjidMeshes.push(corniceBtmMesh);
+
+        // Repeating miniature gold finial crests along top of frieze
+        const finialCount = Math.floor(totalLen / 0.7);
+        for (let fi = 0; fi < finialCount; fi++) {
+          const frac = (fi + 0.5) / finialCount;
+          const fx = startPt.x + tx * frac * totalLen + nx * (wallInwardOffset + 0.02);
+          const fz = startPt.z + tz * frac * totalLen + nz * (wallInwardOffset + 0.02);
+          const finialGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
+          const finialMesh = new THREE.Mesh(finialGeo, goldMat);
+          finialMesh.position.set(fx, friezeY + friezeH / 2 + 0.17, fz);
+          finialMesh.userData = { wallDir };
+          this.scene.add(finialMesh);
+          this.extraMasjidMeshes.push(finialMesh);
+        }
+      }
+
+      // 2. CONTINUOUS LOWER POLISHED MARBLE IZAREH WAINSCOT
+      if (showIzareh) {
+        const izarehH = 1.32;
+        const izarehY = izarehH / 2;
+        const izarehMidX = (startPt.x + endPt.x) / 2 + nx * wallInwardOffset;
+        const izarehMidZ = (startPt.z + endPt.z) / 2 + nz * wallInwardOffset;
+
+        const izarehGeo = new THREE.BoxGeometry(totalLen, izarehH, 0.04);
+        const izarehMesh = new THREE.Mesh(izarehGeo, izarehMat);
+        izarehMesh.position.set(izarehMidX, izarehY, izarehMidZ);
+        izarehMesh.rotation.y = rotY;
+        izarehMesh.receiveShadow = true;
+        izarehMesh.userData = { wallDir };
+        this.scene.add(izarehMesh);
+        this.extraMasjidMeshes.push(izarehMesh);
+
+        // Turquoise glazed relief frieze band crowning the Izareh
+        const izarehCapGeo = new THREE.BoxGeometry(totalLen + 0.05, 0.08, 0.08);
+        const izarehCapMesh = new THREE.Mesh(izarehCapGeo, turquoiseMat);
+        izarehCapMesh.position.set(
+          izarehMidX + nx * 0.02,
+          izarehH + 0.04,
+          izarehMidZ + nz * 0.02
+        );
+        izarehCapMesh.rotation.y = rotY;
+        izarehCapMesh.userData = { wallDir };
+        this.scene.add(izarehCapMesh);
+        this.extraMasjidMeshes.push(izarehCapMesh);
+      }
+
+      // 3. MONUMENTAL PERSIAN IWAN BAYS
+      const margin = Math.min(1.2, totalLen * 0.08);
+      const usableLen = totalLen - 2 * margin;
+      const bayStep = usableLen / bayCount;
+      const bayWidth = Math.min(3.8, Math.max(2.6, bayStep * 0.86));
+      const bayHeight = wallHeight - 0.95;
+
+      for (let b = 0; b < bayCount; b++) {
+        const s = margin + (b + 0.5) * bayStep;
+        const cx = startPt.x + tx * s + nx * wallInwardOffset;
+        const cz = startPt.z + tz * s + nz * wallInwardOffset;
+
+        const bayGroup = new THREE.Group();
+        bayGroup.position.set(cx, 0, cz);
+        bayGroup.rotation.y = rotY;
+        bayGroup.userData = { wallDir };
+
+        // -------------------------------------------------------------
+        // A. OUTER PISHTAQ PORTAL ARCHITRAVE & PIERS
+        // -------------------------------------------------------------
+        const pierW = 0.34;
+        const pierD = 0.22;
+        const clearSpanW = bayWidth - 2 * pierW;
+
+        // Left Pier
+        const leftPierGeo = new THREE.BoxGeometry(pierW, bayHeight, pierD);
+        const leftPierMesh = new THREE.Mesh(leftPierGeo, lapisMat);
+        leftPierMesh.position.set(-bayWidth / 2 + pierW / 2, bayHeight / 2, pierD / 2);
+        leftPierMesh.castShadow = true;
+        leftPierMesh.receiveShadow = true;
+        bayGroup.add(leftPierMesh);
+
+        // Left Pier Tile Facing
+        const leftTileGeo = new THREE.BoxGeometry(pierW * 0.85, bayHeight * 0.92, 0.02);
+        const leftTileMesh = new THREE.Mesh(leftTileGeo, tileMat);
+        leftTileMesh.position.set(-bayWidth / 2 + pierW / 2, bayHeight / 2, pierD + 0.01);
+        bayGroup.add(leftTileMesh);
+
+        // Right Pier
+        const rightPierGeo = new THREE.BoxGeometry(pierW, bayHeight, pierD);
+        const rightPierMesh = new THREE.Mesh(rightPierGeo, lapisMat);
+        rightPierMesh.position.set(+bayWidth / 2 - pierW / 2, bayHeight / 2, pierD / 2);
+        rightPierMesh.castShadow = true;
+        rightPierMesh.receiveShadow = true;
+        bayGroup.add(rightPierMesh);
+
+        // Right Pier Tile Facing
+        const rightTileGeo = new THREE.BoxGeometry(pierW * 0.85, bayHeight * 0.92, 0.02);
+        const rightTileMesh = new THREE.Mesh(rightTileGeo, tileMat);
+        rightTileMesh.position.set(+bayWidth / 2 - pierW / 2, bayHeight / 2, pierD + 0.01);
+        bayGroup.add(rightTileMesh);
+
+        // Engaged Semi-Octagonal Pilaster Columns with Gold Muqarnas Capitals
+        const colRadius = 0.11;
+        const colHeight = bayHeight - 0.7;
+        const colGeo = new THREE.CylinderGeometry(colRadius, colRadius * 1.05, colHeight, 8);
+        const leftColMesh = new THREE.Mesh(colGeo, turquoiseMat);
+        leftColMesh.position.set(-bayWidth / 2 + pierW / 2, colHeight / 2 + 0.15, pierD + colRadius * 0.8);
+        leftColMesh.castShadow = true;
+        bayGroup.add(leftColMesh);
+
+        const rightColMesh = new THREE.Mesh(colGeo, turquoiseMat);
+        rightColMesh.position.set(+bayWidth / 2 - pierW / 2, colHeight / 2 + 0.15, pierD + colRadius * 0.8);
+        rightColMesh.castShadow = true;
+        bayGroup.add(rightColMesh);
+
+        // Gold Ring Bands on Columns
+        for (let ringY = 0.6; ringY < colHeight; ringY += 0.8) {
+          const ringGeo = new THREE.TorusGeometry(colRadius + 0.015, 0.016, 8, 16);
+          const leftRing = new THREE.Mesh(ringGeo, goldMat);
+          leftRing.rotation.x = Math.PI / 2;
+          leftRing.position.set(-bayWidth / 2 + pierW / 2, ringY, pierD + colRadius * 0.8);
+          bayGroup.add(leftRing);
+
+          const rightRing = new THREE.Mesh(ringGeo, goldMat);
+          rightRing.rotation.x = Math.PI / 2;
+          rightRing.position.set(+bayWidth / 2 - pierW / 2, ringY, pierD + colRadius * 0.8);
+          bayGroup.add(rightRing);
+        }
+
+        // Gold Muqarnas Capitals
+        const capGeo = new THREE.CylinderGeometry(colRadius * 1.5, colRadius * 0.95, 0.32, 8);
+        const leftCap = new THREE.Mesh(capGeo, goldMat);
+        leftCap.position.set(-bayWidth / 2 + pierW / 2, colHeight + 0.3, pierD + colRadius * 0.8);
+        bayGroup.add(leftCap);
+
+        const rightCap = new THREE.Mesh(capGeo, goldMat);
+        rightCap.position.set(+bayWidth / 2 - pierW / 2, colHeight + 0.3, pierD + colRadius * 0.8);
+        bayGroup.add(rightCap);
+
+        // Top Architrave / Entablature Header Beam
+        const headerH = 0.48;
+        const headerGeo = new THREE.BoxGeometry(bayWidth + 0.2, headerH, pierD + 0.06);
+        const headerMesh = new THREE.Mesh(headerGeo, lapisMat);
+        headerMesh.position.set(0, bayHeight + headerH / 2, (pierD + 0.06) / 2);
+        headerMesh.castShadow = true;
+        bayGroup.add(headerMesh);
+
+        // Header Tile Medallion Frieze
+        const headerTileGeo = new THREE.BoxGeometry(bayWidth, headerH * 0.72, 0.02);
+        const headerTileMesh = new THREE.Mesh(headerTileGeo, tileMat);
+        headerTileMesh.position.set(0, bayHeight + headerH / 2, pierD + 0.04);
+        bayGroup.add(headerTileMesh);
+
+        // Stepped Persian Merlon Crests on top of Pishtaq Header
+        const merlonCount = 7;
+        const merlonStep = bayWidth / merlonCount;
+        for (let mi = 0; mi < merlonCount; mi++) {
+          const mx = -bayWidth / 2 + (mi + 0.5) * merlonStep;
+          const merlonGeo = new THREE.BoxGeometry(merlonStep * 0.55, 0.16, 0.08);
+          const merlonMesh = new THREE.Mesh(merlonGeo, goldMat);
+          merlonMesh.position.set(mx, bayHeight + headerH + 0.08, pierD / 2);
+          bayGroup.add(merlonMesh);
+        }
+
+        // -------------------------------------------------------------
+        // B. PERSIAN POINTED 4-CENTERED ARCH (TAQ-E KASRA) & SPANDRELS
+        // -------------------------------------------------------------
+        const archApexY = bayHeight - 0.15;
+        const archSpringY = bayHeight - 1.45;
+        const spandrelH = archApexY - archSpringY;
+
+        // Left Spandrel (Triangle filled with Haft-Rangi ceramic tiles)
+        const leftSpandrelGeo = new THREE.BoxGeometry(clearSpanW / 2, spandrelH, 0.06);
+        const leftSpandrelMesh = new THREE.Mesh(leftSpandrelGeo, tileMat);
+        leftSpandrelMesh.position.set(-clearSpanW / 4, archSpringY + spandrelH / 2, pierD - 0.02);
+        bayGroup.add(leftSpandrelMesh);
+
+        // Right Spandrel
+        const rightSpandrelGeo = new THREE.BoxGeometry(clearSpanW / 2, spandrelH, 0.06);
+        const rightSpandrelMesh = new THREE.Mesh(rightSpandrelGeo, tileMat);
+        rightSpandrelMesh.position.set(+clearSpanW / 4, archSpringY + spandrelH / 2, pierD - 0.02);
+        bayGroup.add(rightSpandrelMesh);
+
+        // Persian Pointed Arch Rib Moldings (Gold & Turquoise Bevel Rim)
+        const archSegments = 16;
+        for (let ai = 0; ai < archSegments; ai++) {
+          const t1 = ai / archSegments;
+          const t2 = (ai + 1) / archSegments;
+          // Curve profile for Persian 4-centered arch
+          const p1x = (t1 - 0.5) * clearSpanW;
+          const p1y = archSpringY + Math.sin(t1 * Math.PI) * (archApexY - archSpringY);
+          const p2x = (t2 - 0.5) * clearSpanW;
+          const p2y = archSpringY + Math.sin(t2 * Math.PI) * (archApexY - archSpringY);
+
+          const segLen = Math.hypot(p2x - p1x, p2y - p1y);
+          const segAng = Math.atan2(p2y - p1y, p2x - p1x);
+
+          const rimGeo = new THREE.BoxGeometry(segLen, 0.08, 0.08);
+          const rimMesh = new THREE.Mesh(rimGeo, ai % 2 === 0 ? goldMat : turquoiseMat);
+          rimMesh.position.set((p1x + p2x) / 2, (p1y + p2y) / 2, pierD + 0.01);
+          rimMesh.rotation.z = segAng;
+          bayGroup.add(rimMesh);
+        }
+
+        // -------------------------------------------------------------
+        // C. MULTI-TIER CORBELED 3D MUQARNAS STALACTITE VAULTING (مقرنس)
+        // -------------------------------------------------------------
+        if (showMuqarnas) {
+          // Tier 1 (Apex Corbel - 3 facet cells)
+          const tier1Y = archApexY - 0.25;
+          for (let ti = -1; ti <= 1; ti++) {
+            const cellGeo = new THREE.BoxGeometry(0.32, 0.22, 0.16);
+            const cellMesh = new THREE.Mesh(cellGeo, muqarnasMat);
+            cellMesh.position.set(ti * 0.36, tier1Y, pierD - 0.06);
+            cellMesh.rotation.x = 0.25;
+            bayGroup.add(cellMesh);
+
+            const dropGeo = new THREE.ConeGeometry(0.035, 0.12, 6);
+            const dropMesh = new THREE.Mesh(dropGeo, goldMat);
+            dropMesh.rotation.x = Math.PI;
+            dropMesh.position.set(ti * 0.36, tier1Y - 0.15, pierD - 0.02);
+            bayGroup.add(dropMesh);
+          }
+
+          // Tier 2 (Mid Corbel - 5 facet cells)
+          const tier2Y = archApexY - 0.52;
+          for (let ti = -2; ti <= 2; ti++) {
+            const cellGeo = new THREE.BoxGeometry(0.34, 0.24, 0.22);
+            const cellMesh = new THREE.Mesh(cellGeo, muqarnasMat);
+            cellMesh.position.set(ti * 0.36, tier2Y, pierD - 0.1);
+            cellMesh.rotation.x = 0.2;
+            bayGroup.add(cellMesh);
+
+            const dropGeo = new THREE.ConeGeometry(0.04, 0.14, 6);
+            const dropMesh = new THREE.Mesh(dropGeo, goldMat);
+            dropMesh.rotation.x = Math.PI;
+            dropMesh.position.set(ti * 0.36, tier2Y - 0.17, pierD - 0.04);
+            bayGroup.add(dropMesh);
+          }
+
+          // Tier 3 (Base Corbel - 7 facet brackets)
+          const tier3Y = archApexY - 0.82;
+          for (let ti = -3; ti <= 3; ti++) {
+            const cellGeo = new THREE.BoxGeometry(0.32, 0.25, 0.26);
+            const cellMesh = new THREE.Mesh(cellGeo, muqarnasMat);
+            cellMesh.position.set(ti * 0.34, tier3Y, pierD - 0.14);
+            cellMesh.rotation.x = 0.15;
+            bayGroup.add(cellMesh);
+
+            const dropGeo = new THREE.ConeGeometry(0.035, 0.12, 6);
+            const dropMesh = new THREE.Mesh(dropGeo, goldMat);
+            dropMesh.rotation.x = Math.PI;
+            dropMesh.position.set(ti * 0.34, tier3Y - 0.16, pierD - 0.06);
+            bayGroup.add(dropMesh);
+          }
+        }
+
+        // -------------------------------------------------------------
+        // D. RECESSED SHAHNESHIN NICHE (UPPER, MIDDLE & LOWER ZONES)
+        // -------------------------------------------------------------
+        const nicheW = clearSpanW * 0.94;
+        const nicheBackZ = -0.01;
+
+        // D1. UPPER ZONE: TRADITIONAL PERSIAN OROSI STAINED-GLASS WINDOW
+        if (showOrosi) {
+          const windowH = 1.35;
+          const windowY = 2.85;
+          const windowGeo = new THREE.BoxGeometry(nicheW * 0.88, windowH, 0.02);
+          const windowMesh = new THREE.Mesh(windowGeo, orosiMat);
+          windowMesh.position.set(0, windowY, nicheBackZ + 0.01);
+          bayGroup.add(windowMesh);
+
+          // Carved Dark Timber Frame
+          const frameGeo = new THREE.BoxGeometry(nicheW * 0.92, windowH + 0.08, 0.04);
+          const frameMesh = new THREE.Mesh(frameGeo, darkWoodMat);
+          frameMesh.position.set(0, windowY, nicheBackZ);
+          bayGroup.add(frameMesh);
+
+          // Soft ambient sunlight glow behind stained glass
+          const orosiGlow = new THREE.PointLight(0xffeedd, 0.4, 3.5, 2.0);
+          orosiGlow.position.set(0, windowY + 0.1, nicheBackZ + 0.15);
+          bayGroup.add(orosiGlow);
+        }
+
+        // D2. MIDDLE ZONE: RECESSED TAQCHEH QURAN ALCOVE
+        if (showTaqcheh) {
+          const shelfY = 1.32;
+          const shelfW = nicheW * 0.9;
+          const shelfD = 0.32;
+
+          // Polished White Marble Shelf Ledge
+          const shelfGeo = new THREE.BoxGeometry(shelfW, 0.08, shelfD);
+          const shelfMesh = new THREE.Mesh(shelfGeo, marbleMat);
+          shelfMesh.position.set(0, shelfY, nicheBackZ + shelfD / 2);
+          shelfMesh.castShadow = true;
+          shelfMesh.receiveShadow = true;
+          bayGroup.add(shelfMesh);
+
+          // Gold Bead Trim under marble shelf
+          const shelfTrimGeo = new THREE.BoxGeometry(shelfW + 0.02, 0.03, 0.03);
+          const shelfTrimMesh = new THREE.Mesh(shelfTrimGeo, goldMat);
+          shelfTrimMesh.position.set(0, shelfY - 0.05, nicheBackZ + shelfD + 0.01);
+          bayGroup.add(shelfTrimMesh);
+
+          // SPECIAL INTERIOR ACCENTS BASED ON WALL & BAY:
+          if (wallDir === 'south' && b === 0) {
+            // Bay #0 on South (Back) Wall: Islamic Digital Prayer Time Clock
+            const clockW = 1.35;
+            const clockH = 0.72;
+            const clockGeo = new THREE.BoxGeometry(clockW, clockH, 0.05);
+            const clockMesh = new THREE.Mesh(clockGeo, prayerClockMat);
+            clockMesh.position.set(0, shelfY + clockH / 2 + 0.08, nicheBackZ + 0.04);
+            clockMesh.castShadow = true;
+            bayGroup.add(clockMesh);
+
+            // Gilded Frame around Clock
+            const clockFrameGeo = new THREE.BoxGeometry(clockW + 0.1, clockH + 0.1, 0.03);
+            const clockFrameMesh = new THREE.Mesh(clockFrameGeo, goldMat);
+            clockFrameMesh.position.set(0, shelfY + clockH / 2 + 0.08, nicheBackZ + 0.02);
+            bayGroup.add(clockFrameMesh);
+          } else if (wallDir === 'south' && b === bayCount - 1) {
+            // Rear Corner Bay: Handcrafted Carved Timber Shoe & Item Storage Alcove
+            const cabW = nicheW * 0.85;
+            const cabH = 0.75;
+            const cabD = 0.28;
+            const cabGeo = new THREE.BoxGeometry(cabW, cabH, cabD);
+            const cabMesh = new THREE.Mesh(cabGeo, darkWoodMat);
+            cabMesh.position.set(0, shelfY + cabH / 2 + 0.02, nicheBackZ + cabD / 2);
+            bayGroup.add(cabMesh);
+
+            // Compartment shelves dividers
+            for (let divX = -cabW * 0.35; divX <= cabW * 0.35; divX += cabW * 0.25) {
+              const divGeo = new THREE.BoxGeometry(0.02, cabH, cabD);
+              const divMesh = new THREE.Mesh(divGeo, goldMat);
+              divMesh.position.set(divX, shelfY + cabH / 2 + 0.02, nicheBackZ + cabD / 2);
+              bayGroup.add(divMesh);
+            }
+          } else {
+            // Standard Persian Grand Iwan Bay: Handcrafted Folding Rehal & Open Holy Quran
+            const rehalGroup = new THREE.Group();
+            rehalGroup.position.set(0, shelfY + 0.04, nicheBackZ + shelfD * 0.55);
+
+            // Carved Walnut X-Stand (Rehal)
+            const rehalLegGeo = new THREE.BoxGeometry(0.42, 0.025, 0.26);
+            const rehalLeg1 = new THREE.Mesh(rehalLegGeo, darkWoodMat);
+            rehalLeg1.rotation.z = 0.38;
+            rehalLeg1.position.set(-0.06, 0.09, 0);
+            rehalGroup.add(rehalLeg1);
+
+            const rehalLeg2 = new THREE.Mesh(rehalLegGeo, darkWoodMat);
+            rehalLeg2.rotation.z = -0.38;
+            rehalLeg2.position.set(0.06, 0.09, 0);
+            rehalGroup.add(rehalLeg2);
+
+            // Open Illuminated Holy Quran (Mushaf) with green & gold binding
+            const quranBookGeo = new THREE.BoxGeometry(0.38, 0.03, 0.26);
+            const quranBookMesh = new THREE.Mesh(quranBookGeo, quranNicheMat);
+            quranBookMesh.position.set(0, 0.17, 0);
+            rehalGroup.add(quranBookMesh);
+
+            bayGroup.add(rehalGroup);
+
+            // Flanking Ornate Brass Rosewater Sprinkler (Golabpash)
+            const flaconGeo = new THREE.CylinderGeometry(0.02, 0.05, 0.22, 12);
+            const flaconMesh = new THREE.Mesh(flaconGeo, goldMat);
+            flaconMesh.position.set(-shelfW * 0.35, shelfY + 0.15, nicheBackZ + shelfD * 0.5);
+            bayGroup.add(flaconMesh);
+
+            // Flanking Incense Burner (Mabkhara)
+            const censerGeo = new THREE.CylinderGeometry(0.045, 0.035, 0.14, 8);
+            const censerMesh = new THREE.Mesh(censerGeo, goldMat);
+            censerMesh.position.set(+shelfW * 0.35, shelfY + 0.11, nicheBackZ + shelfD * 0.5);
+            bayGroup.add(censerMesh);
+          }
+        }
+
+        // D3. LOWER ZONE: POLISHED MARBLE & TURQUOISE IZAREH WAINSCOT PANEL
+        if (showIzareh) {
+          const lowerH = 1.25;
+          const lowerGeo = new THREE.BoxGeometry(nicheW, lowerH, 0.03);
+          const lowerMesh = new THREE.Mesh(lowerGeo, izarehMat);
+          lowerMesh.position.set(0, lowerH / 2, nicheBackZ + 0.02);
+          lowerMesh.receiveShadow = true;
+          bayGroup.add(lowerMesh);
+
+          // Turquoise relief capping border
+          const borderGeo = new THREE.BoxGeometry(nicheW + 0.04, 0.06, 0.06);
+          const borderMesh = new THREE.Mesh(borderGeo, turquoiseMat);
+          borderMesh.position.set(0, lowerH + 0.03, nicheBackZ + 0.03);
+          bayGroup.add(borderMesh);
+        }
+
+        // -------------------------------------------------------------
+        // E. SUSPENDED PERSIAN PIERCED BRASS LANTERN (CHERAGH-E DIVARI)
+        // -------------------------------------------------------------
+        if (showLamps) {
+          const lampGroup = new THREE.Group();
+          const lampCenterY = 3.35;
+          const lampCenterZ = pierD + 0.16;
+          lampGroup.position.set(0, lampCenterY, lampCenterZ);
+
+          // Brass Chain descending from vault apex
+          const chainGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.65, 6);
+          const chainMesh = new THREE.Mesh(chainGeo, goldMat);
+          chainMesh.position.set(0, 0.35, 0);
+          lampGroup.add(chainMesh);
+
+          // Octagonal Pierced Brass Lantern Housing
+          const lanternBodyGeo = new THREE.CylinderGeometry(0.18, 0.14, 0.32, 8);
+          const lanternBodyMesh = new THREE.Mesh(lanternBodyGeo, goldMat);
+          lanternBodyMesh.castShadow = true;
+          lampGroup.add(lanternBodyMesh);
+
+          // Amber Glowing Core
+          const coreGeo = new THREE.CylinderGeometry(0.13, 0.1, 0.26, 8);
+          const coreMat = new THREE.MeshBasicMaterial({ color: 0xffe89e });
+          const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+          lampGroup.add(coreMesh);
+
+          // Pyramidal 8-Sided Roof Cap & Crescent Finial
+          const roofGeo = new THREE.ConeGeometry(0.2, 0.18, 8);
+          const roofMesh = new THREE.Mesh(roofGeo, goldMat);
+          roofMesh.position.set(0, 0.23, 0);
+          lampGroup.add(roofMesh);
+
+          const finialGeo = new THREE.SphereGeometry(0.035, 8, 8);
+          const finialMesh = new THREE.Mesh(finialGeo, goldMat);
+          finialMesh.position.set(0, 0.34, 0);
+          lampGroup.add(finialMesh);
+
+          // Warm Golden Illuminating Point Light (2700K Amber Glow)
+          const lampLight = new THREE.PointLight(0xffdf99, 1.5, 6.5, 1.6);
+          lampLight.position.set(0, -0.05, 0);
+          lampGroup.add(lampLight);
+
+          bayGroup.add(lampGroup);
+        }
+
+        this.scene.add(bayGroup);
+        this.extraMasjidMeshes.push(bayGroup);
+      }
+    };
+
+    // -------------------------------------------------------------
+    // EXECUTE IWAN ENSEMBLE ACROSS THE THREE PERIMETER WALLS
+    // -------------------------------------------------------------
+    // 1. West Wall (Left Wall - from P_back_left to P_qibla_left, ~22.4m length)
+    if (wallVis.west) {
+      buildIwanWallSegment(P_back_left, P_qibla_left, 'west', 5);
+    }
+
+    // 2. East Wall (Right Wall - from P_qibla_right to P_gate_east, ~19.5m length)
+    if (wallVis.east) {
+      const eastEnd = isDiagonalGate ? P_gate_east : P_back_right;
+      buildIwanWallSegment(P_qibla_right, eastEnd, 'east', 4);
+    }
+
+    // 3. South Wall (Rear Wall - from P_gate_south to P_back_left, ~16.6m length)
+    if (wallVis.south) {
+      const southStart = isDiagonalGate ? P_gate_south : P_back_right;
+      buildIwanWallSegment(southStart, P_back_left, 'south', 3);
+    }
+  }
+
   // Adjust walls in 3D orbit mode so user can see inside easily
   private updateWallVisibility() {
     const wallVis = this.roomConfig.wallVisibility || {
@@ -1907,6 +3068,25 @@ export class SceneManager {
         if (this.wallMeshes['west']) this.wallMeshes['west'].visible = wallVis.west;
       }
     }
+
+    // Synchronize decorative Islamic wall elements (Persian Iwan elements on West, East, South walls)
+    this.extraMasjidMeshes.forEach((mesh) => {
+      const wDir = mesh.userData?.wallDir;
+      if (wDir) {
+        if (this.cameraMode === 'walkthrough') {
+          mesh.visible = wallVis[wDir as keyof WallVisibilityConfig] ?? true;
+        } else if (this.cameraMode === '2d-plan') {
+          mesh.visible = false;
+        } else {
+          const camPos = this.orbitCamera.position;
+          let allowed = wallVis[wDir as keyof WallVisibilityConfig] ?? true;
+          if (wDir === 'west') allowed = allowed && camPos.x > -5;
+          else if (wDir === 'east') allowed = allowed && camPos.x < 5;
+          else if (wDir === 'south') allowed = allowed && camPos.z < 5;
+          mesh.visible = allowed;
+        }
+      }
+    });
   }
 
   // -------------------------------------------------------------

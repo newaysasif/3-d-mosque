@@ -1895,3 +1895,962 @@ export function getIslamicPrayerClockTexture(): THREE.CanvasTexture {
   return texture;
 }
 
+// =========================================================================
+// PERSIAN IWAN ARCHITECTURAL TEXTURES (ISFAHAN / SHAH MOSQUE / SAMARKAND)
+// =========================================================================
+
+// Helper for 12-point Persian Girih Star (Shams-e Girih)
+function drawTwelvePointStar(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  outerR: number,
+  innerR: number
+) {
+  const points = 24;
+  ctx.beginPath();
+  for (let i = 0; i < points; i++) {
+    const angle = (i * Math.PI) / 12;
+    const r = i % 2 === 0 ? outerR : innerR;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+// 18. Persian Haft-Rangi (Seven-Color) Mosaic Faience Tile (Isfahan Royal Cobalt & Turquoise)
+export function getPersianIwanTileTexture(): THREE.CanvasTexture {
+  const cacheKey = 'persian_iwan_haft_rangi_tile';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Deep royal Persian cobalt blue ground
+  const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, w * 0.72);
+  bgGrad.addColorStop(0, '#103463');
+  bgGrad.addColorStop(0.55, '#0c274c');
+  bgGrad.addColorStop(1, '#071830');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Outer gold and turquoise interlaced fret borders
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 14;
+  ctx.strokeRect(10, 10, w - 20, h - 20);
+
+  ctx.strokeStyle = '#00a896'; // Turquoise
+  ctx.lineWidth = 4;
+  ctx.strokeRect(26, 26, w - 52, h - 52);
+
+  ctx.strokeStyle = '#fff2a8';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(34, 34, w - 68, h - 68);
+
+  // Corner Persian palmette brackets (Shah Abbasi motifs)
+  const drawCornerPalmette = (cx: number, cy: number, rot: number) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+
+    // Turquoise fan leaf
+    ctx.fillStyle = '#00a896';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(80, 40, 110, 110);
+    ctx.quadraticCurveTo(40, 80, 0, 0);
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Saffron inner teardrop
+    ctx.fillStyle = '#d4af37';
+    ctx.beginPath();
+    ctx.arc(60, 60, 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#f8f6f0';
+    ctx.beginPath();
+    ctx.arc(60, 60, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  };
+
+  drawCornerPalmette(40, 40, 0);
+  drawCornerPalmette(w - 40, 40, Math.PI / 2);
+  drawCornerPalmette(w - 40, h - 40, Math.PI);
+  drawCornerPalmette(40, h - 40, -Math.PI / 2);
+
+  // Central Grand Shams-e Girih Medallion (12-pointed Sunburst Star)
+  const cx = w / 2;
+  const cy = h / 2;
+  const outerStarR = 260;
+  const innerStarR = 150;
+
+  // Lapis backdrop ring
+  ctx.fillStyle = '#0a1d38';
+  ctx.beginPath();
+  ctx.arc(cx, cy, outerStarR + 32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // Outer 12-point star in Persian Turquoise
+  ctx.fillStyle = '#00a896';
+  drawTwelvePointStar(ctx, cx, cy, outerStarR, innerStarR);
+  ctx.fill();
+  ctx.strokeStyle = '#ffeaa7';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Secondary 12-point star in Saffron Gold
+  ctx.fillStyle = '#d4af37';
+  drawTwelvePointStar(ctx, cx, cy, outerStarR * 0.72, innerStarR * 0.72);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Inner Persian Cobalt rosette
+  ctx.fillStyle = '#0f2b5c';
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerStarR * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // 12 radiating floral lotus petals (Shah Abbasi petals)
+  for (let i = 0; i < 12; i++) {
+    const angle = (i * Math.PI) / 6;
+    const px = cx + Math.cos(angle) * 78;
+    const py = cy + Math.sin(angle) * 78;
+
+    ctx.fillStyle = '#f8f6f0'; // Ivory petal
+    ctx.beginPath();
+    ctx.arc(px, py, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#00a896';
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Golden core
+  ctx.fillStyle = '#ffcc00';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Swirling Persian Islimi (arabesque) vine tracery between corners and medallion
+  ctx.strokeStyle = '#02c39a';
+  ctx.lineWidth = 3;
+  const drawIslimiTendril = (x1: number, y1: number, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x2: number, y2: number) => {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x2, y2);
+    ctx.stroke();
+  };
+
+  drawIslimiTendril(120, 120, 240, 180, 200, 320, cx - 140, cy - 140);
+  drawIslimiTendril(w - 120, 120, w - 240, 180, w - 200, 320, cx + 140, cy - 140);
+  drawIslimiTendril(w - 120, h - 120, w - 240, h - 180, w - 200, h - 320, cx + 140, cy + 140);
+  drawIslimiTendril(120, h - 120, 240, h - 180, 200, h - 320, cx - 140, cy + 140);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+// 19. Continuous Persian Katibeh Quranic Calligraphy Ribbon (West, East & South Walls)
+export function getPersianKatibehFriezeTexture(): THREE.CanvasTexture {
+  const cacheKey = 'persian_katibeh_frieze_texture';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048;
+  canvas.height = 384;
+  const ctx = canvas.getContext('2d')!;
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Royal Lapis Lazuli / Persian Cobalt Blue field
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+  bgGrad.addColorStop(0, '#061730');
+  bgGrad.addColorStop(0.3, '#0b264e');
+  bgGrad.addColorStop(0.7, '#0f3265');
+  bgGrad.addColorStop(1, '#061730');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Background subtle turquoise arabesque vine underlay
+  ctx.strokeStyle = 'rgba(0, 168, 150, 0.28)';
+  ctx.lineWidth = 2.5;
+  for (let x = 0; x < w; x += 120) {
+    ctx.beginPath();
+    ctx.arc(x + 60, h / 2, 45, 0, Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + 120, h / 2, 45, Math.PI, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Gilded border mouldings with turquoise beaded rosettes
+  const goldGrad = ctx.createLinearGradient(0, 0, w, 0);
+  goldGrad.addColorStop(0, '#cda137');
+  goldGrad.addColorStop(0.25, '#ffe58f');
+  goldGrad.addColorStop(0.5, '#d4af37');
+  goldGrad.addColorStop(0.75, '#fff1a8');
+  goldGrad.addColorStop(1, '#b58b22');
+
+  ctx.strokeStyle = goldGrad;
+  ctx.lineWidth = 10;
+  ctx.strokeRect(10, 10, w - 20, h - 20);
+
+  ctx.strokeStyle = '#00a896';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(22, 22, w - 44, h - 44);
+
+  // Repeating turquoise & gold jewel roundels along top and bottom borders
+  for (let x = 40; x < w - 40; x += 36) {
+    ctx.fillStyle = '#00a896';
+    ctx.beginPath();
+    ctx.arc(x, 16, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffe58f';
+    ctx.beginPath();
+    ctx.arc(x, 16, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#00a896';
+    ctx.beginPath();
+    ctx.arc(x, h - 16, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffe58f';
+    ctx.beginPath();
+    ctx.arc(x, h - 16, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Persian Thuluth Calligraphy:
+  // Ayat al-Kursi (2:255) & Surah An-Nur (24:35) in pristine illuminated white with gold halo
+  ctx.shadowColor = 'rgba(255, 225, 120, 0.75)';
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  ctx.font = 'bold 62px "Amiri", "Traditional Arabic", "Noto Naskh Arabic", "Times New Roman", serif';
+  ctx.fillText('اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ  ۞  مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ', w / 2, h / 2 - 20);
+
+  ctx.shadowBlur = 6;
+  ctx.font = 'bold 36px "Amiri", "Traditional Arabic", serif';
+  ctx.fillStyle = '#ffd700';
+  ctx.fillText('الْمِصْبَاحُ فِي زُجَاجَةٍ الزُّجَاجَةُ كَأَنَّهَا كَوْكَبٌ دُرِّيٌّ  •  نُورٌ عَلَى نُورٍ يَهْدِي اللَّهُ لِنُورِهِ مَن يَشَاءُ', w / 2, h / 2 + 52);
+
+  ctx.shadowBlur = 0;
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.needsUpdate = true;
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+// 20. Persian Muqarnas (Stalactite Vault Facet Texture)
+export function getPersianMuqarnasFacetTexture(): THREE.CanvasTexture {
+  const cacheKey = 'persian_muqarnas_facet_texture';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Lapis to turquoise shaded alcove cell
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#00a896'); // Turquoise apex
+  grad.addColorStop(0.35, '#0d3d63');
+  grad.addColorStop(0.75, '#0a2542');
+  grad.addColorStop(1, '#051224'); // Deep recessed shadow
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Stepped stalactite tier brackets
+  ctx.strokeStyle = '#d4af37'; // Gold trim
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(w / 2, h * 0.45);
+  ctx.lineTo(w, 0);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(w * 0.15, 0);
+  ctx.lineTo(w / 2, h * 0.7);
+  ctx.lineTo(w * 0.85, 0);
+  ctx.stroke();
+
+  // Central golden rosette in niche apex
+  ctx.fillStyle = '#ffcc00';
+  ctx.beginPath();
+  ctx.arc(w / 2, h * 0.3, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+// 21. Traditional Persian Orosi Stained-Glass & Girih Lattice Arch Window (پنجره ارسی)
+export function getPersianOrosiWindowTexture(): THREE.CanvasTexture {
+  const cacheKey = 'persian_orosi_window_texture';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Dark timber outer frame (Walnut)
+  ctx.fillStyle = '#1c130c';
+  ctx.fillRect(0, 0, w, h);
+
+  // Persian pointed arch outline
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(60, h - 60);
+  ctx.lineTo(60, h * 0.46);
+  ctx.quadraticCurveTo(60, h * 0.12, w / 2, 40);
+  ctx.quadraticCurveTo(w - 60, h * 0.12, w - 60, h * 0.46);
+  ctx.lineTo(w - 60, h - 60);
+  ctx.closePath();
+  ctx.clip();
+
+  // Background sunlight glow through stained glass
+  const sunGlow = ctx.createRadialGradient(w / 2, h * 0.35, 60, w / 2, h / 2, w * 0.6);
+  sunGlow.addColorStop(0, 'rgba(255, 252, 230, 0.95)');
+  sunGlow.addColorStop(0.4, 'rgba(255, 220, 140, 0.7)');
+  sunGlow.addColorStop(1, 'rgba(180, 210, 240, 0.5)');
+  ctx.fillStyle = sunGlow;
+  ctx.fillRect(0, 0, w, h);
+
+  // Geometric 12-Point Girih Grid of Stained Glass Panes
+  const cols = 6;
+  const rows = 6;
+  const cellW = (w - 120) / cols;
+  const cellH = (h - 120) / rows;
+
+  const jewelColors = [
+    '#00a896', // Persian Turquoise
+    '#0f4c81', // Royal Cobalt Blue
+    '#c0392b', // Pomegranate Ruby Red
+    '#f39c12', // Saffron Amber
+    '#27ae60', // Persian Emerald Green
+    '#8e44ad', // Lapis Amethyst
+  ];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = 60 + c * cellW;
+      const y = 60 + r * cellH;
+      const colorIdx = (r * 3 + c * 2 + (r % 2)) % jewelColors.length;
+
+      // Stained glass pane
+      ctx.fillStyle = jewelColors[colorIdx];
+      ctx.globalAlpha = 0.82;
+      ctx.fillRect(x + 4, y + 4, cellW - 8, cellH - 8);
+
+      // Inner bevel / glass gleam
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(x + 4, y + 4);
+      ctx.lineTo(x + cellW - 4, y + 4);
+      ctx.lineTo(x + 4, y + cellH - 4);
+      ctx.closePath();
+      ctx.fill();
+
+      // Delicate wood fretwork star within each pane
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = '#2b1b11'; // Dark wood mullion
+      ctx.lineWidth = 5;
+      ctx.strokeRect(x, y, cellW, cellH);
+
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x + cellW / 2, y);
+      ctx.lineTo(x + cellW, y + cellH / 2);
+      ctx.lineTo(x + cellW / 2, y + cellH);
+      ctx.lineTo(x, y + cellH / 2);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+
+  // Outer arch carved wood moulding
+  ctx.strokeStyle = '#3e2716';
+  ctx.lineWidth = 20;
+  ctx.beginPath();
+  ctx.moveTo(60, h - 60);
+  ctx.lineTo(60, h * 0.46);
+  ctx.quadraticCurveTo(60, h * 0.12, w / 2, 40);
+  ctx.quadraticCurveTo(w - 60, h * 0.12, w - 60, h * 0.46);
+  ctx.lineTo(w - 60, h - 60);
+  ctx.stroke();
+
+  // Gold inlay bead along arch curve
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.needsUpdate = true;
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+// 22. Persian Izareh (Lower Polished Alabaster/Marble Wainscot with Turquoise Tile Relief Border)
+export function getPersianIzarehDadoTexture(): THREE.CanvasTexture {
+  const cacheKey = 'persian_izareh_dado_texture';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Polished Yazd cream marble plinth ground
+  const marbleGrad = ctx.createLinearGradient(0, 0, w, h);
+  marbleGrad.addColorStop(0, '#f9f7f2');
+  marbleGrad.addColorStop(0.4, '#f2ede2');
+  marbleGrad.addColorStop(0.7, '#ede7dc');
+  marbleGrad.addColorStop(1, '#f7f4ed');
+  ctx.fillStyle = marbleGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle marble veining
+  ctx.strokeStyle = 'rgba(180, 168, 150, 0.22)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, 200);
+  ctx.bezierCurveTo(300, 250, 600, 180, w, 350);
+  ctx.bezierCurveTo(700, 550, 300, 680, 0, 800);
+  ctx.stroke();
+
+  // TOP CROWNING FRIEZE: Glazed Persian Turquoise & Gold Relief Band (y: 0 to 140)
+  ctx.fillStyle = '#0a2342'; // Cobalt ground
+  ctx.fillRect(0, 0, 140, 140);
+
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, w - 8, 132);
+
+  // Continuous Turquoise floral cresting
+  for (let x = 20; x < w; x += 50) {
+    ctx.fillStyle = '#00a896';
+    ctx.beginPath();
+    ctx.arc(x + 25, 70, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffcc00';
+    ctx.beginPath();
+    ctx.arc(x + 25, 70, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // MIDDLE DADO FIELD: Incised Persian Lozenges with Relief Moldings
+  const dadoTop = 160;
+  const dadoBottom = h - 60;
+  const lozengeW = 160;
+  const lozengeH = 220;
+
+  for (let y = dadoTop; y < dadoBottom - 100; y += lozengeH + 30) {
+    for (let x = 30; x < w - lozengeW; x += lozengeW + 30) {
+      ctx.fillStyle = '#faf8f4';
+      ctx.strokeStyle = '#c5bbae';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x, y, lozengeW, lozengeH);
+
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 1.8;
+      ctx.strokeRect(x + 10, y + 10, lozengeW - 20, lozengeH - 20);
+
+      ctx.strokeStyle = '#00a896';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(x + lozengeW / 2, y + 20);
+      ctx.lineTo(x + lozengeW - 20, y + lozengeH / 2);
+      ctx.lineTo(x + lozengeW / 2, y + lozengeH - 20);
+      ctx.lineTo(x + 20, y + lozengeH / 2);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.fillStyle = '#d4af37';
+      ctx.beginPath();
+      ctx.arc(x + lozengeW / 2, y + lozengeH / 2, 10, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // BOTTOM BASE SKIRTING (y: h - 60 to h)
+  ctx.fillStyle = '#dcd5c7';
+  ctx.fillRect(0, h - 60, w, 60);
+  ctx.strokeStyle = '#b8ad9b';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(2, h - 58, w - 4, 56);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+// -------------------------------------------------------------
+// CONTEMPORARY MASJID LUXURY PALETTE (TRAVERTINE & WALNUT MASHRABIYA)
+// Matching user uploaded reference architecture:
+// - Cream Honed Travertine Ashlar Masonry
+// - Rich Architectural Walnut Timber
+// - 12-Point Star Islamic Mashrabiya / Jali Fretwork Screen with Daylighting
+// - Floating 3D Sculpted Bronze Arabic Calligraphy with LED Cove Wash
+// - Low Recessed Timber Bookshelf Cubbies for Holy Qurans
+// - Modern Star-Pierced Brass Wall Sconces
+// -------------------------------------------------------------
+
+export function getTravertineAshlarTexture(): THREE.CanvasTexture {
+  const cacheKey = 'travertine_ashlar_honed_stone';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+
+  // Base warm limestone / travertine tone
+  ctx.fillStyle = '#ece5d9';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle organic mineral grain & tonal variation
+  const rows = 8;
+  const rowH = canvas.height / rows;
+  const cols = 4;
+  const blockW = canvas.width / cols;
+
+  for (let r = 0; r < rows; r++) {
+    const y = r * rowH;
+    const xOffset = (r % 2) * (blockW / 2); // Running bond ashlar
+
+    for (let c = -1; c <= cols; c++) {
+      const x = c * blockW + xOffset;
+
+      // Slight tone per stone slab
+      const shadeDiff = ((r * 17 + c * 29) % 15) - 7;
+      const rVal = Math.min(255, Math.max(220, 238 + shadeDiff));
+      const gVal = Math.min(255, Math.max(215, 230 + shadeDiff));
+      const bVal = Math.min(255, Math.max(200, 218 + shadeDiff));
+      ctx.fillStyle = `rgb(${rVal}, ${gVal}, ${bVal})`;
+      ctx.fillRect(x + 2, y + 2, blockW - 4, rowH - 4);
+
+      // Travertine horizontal micropores and linear bedding
+      ctx.strokeStyle = `rgba(180, 168, 150, 0.25)`;
+      ctx.lineWidth = 1;
+      for (let p = 0; p < 6; p++) {
+        const py = y + 10 + Math.random() * (rowH - 20);
+        const px = x + 10 + Math.random() * (blockW - 40);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + 15 + Math.random() * 30, py + (Math.random() - 0.5) * 2);
+        ctx.stroke();
+      }
+
+      // Ashlar mortar shadow groove
+      ctx.strokeStyle = '#c4baa9';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(x, y, blockW, rowH);
+
+      ctx.strokeStyle = '#8f8475';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(x + 1, y + 1, blockW - 2, rowH - 2);
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2, 2);
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+export function getWalnutArchitecturalWoodTexture(): THREE.CanvasTexture {
+  const cacheKey = 'walnut_architectural_wood';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+
+  // Warm rich natural walnut base
+  ctx.fillStyle = '#3a2416';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Linear timber grain lines
+  for (let i = 0; i < 240; i++) {
+    const x = Math.random() * canvas.width;
+    const alpha = 0.08 + Math.random() * 0.18;
+    const isLight = i % 3 === 0;
+    ctx.strokeStyle = isLight ? `rgba(95, 65, 42, ${alpha})` : `rgba(32, 18, 10, ${alpha})`;
+    ctx.lineWidth = 1 + Math.random() * 4;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.bezierCurveTo(
+      x + (Math.random() - 0.5) * 25,
+      canvas.height * 0.33,
+      x + (Math.random() - 0.5) * 25,
+      canvas.height * 0.66,
+      x + (Math.random() - 0.5) * 20,
+      canvas.height
+    );
+    ctx.stroke();
+  }
+
+  // Subtle wood pores
+  ctx.fillStyle = 'rgba(20, 10, 5, 0.12)';
+  for (let p = 0; p < 800; p++) {
+    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 3 + Math.random() * 5);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+export function getMashrabiyaScreenTexture(): THREE.CanvasTexture {
+  const cacheKey = 'mashrabiya_arched_window_screen';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+
+  // Translucent glowing daylight background (warm diffused sunlight from reference photo)
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bgGrad.addColorStop(0, '#fffbf2');
+  bgGrad.addColorStop(0.4, '#faeed9');
+  bgGrad.addColorStop(0.8, '#eed8bc');
+  bgGrad.addColorStop(1.0, '#ffffff'); // Lower illuminated frosted panel band
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Lower frosted window sill illuminated zone (height ~20% from bottom as in reference photo)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.fillRect(0, canvas.height * 0.78, canvas.width, canvas.height * 0.22);
+  ctx.strokeStyle = '#3a2416';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(0, canvas.height * 0.78, canvas.width, canvas.height * 0.22);
+
+  // 12-Point Star Islamic Geometric Girih Lattice
+  const step = 90;
+  ctx.strokeStyle = '#2b1a10';
+  ctx.lineWidth = 6.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const draw12PointStar = (cx: number, cy: number, r: number) => {
+    ctx.beginPath();
+    const points = 12;
+    for (let i = 0; i < points * 2; i++) {
+      const radius = i % 2 === 0 ? r : r * 0.58;
+      const angle = (i * Math.PI) / points;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    // Secondary inner star ring
+    ctx.beginPath();
+    for (let i = 0; i < points * 2; i++) {
+      const radius = i % 2 === 0 ? r * 0.45 : r * 0.22;
+      const angle = (i * Math.PI) / points + Math.PI / points;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    // Connecting diagonal cross struts
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      ctx.beginPath();
+      ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+      ctx.lineTo(cx - r * Math.cos(angle), cy - r * Math.sin(angle));
+      ctx.stroke();
+    }
+  };
+
+  for (let y = 45; y < canvas.height * 0.78; y += step) {
+    for (let x = 45; x < canvas.width; x += step) {
+      draw12PointStar(x, y, step * 0.55);
+    }
+  }
+
+  // Dark timber perimeter frame
+  ctx.strokeStyle = '#24140a';
+  ctx.lineWidth = 16;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+export function getFloatingBronzeCalligraphyTexture(): THREE.CanvasTexture {
+  const cacheKey = 'floating_bronze_arabic_calligraphy_frieze';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  // Smooth cream honed limestone background
+  ctx.fillStyle = '#ece5d9';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle stone joint line running horizontally
+  ctx.strokeStyle = 'rgba(160, 148, 130, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height * 0.85);
+  ctx.lineTo(canvas.width, canvas.height * 0.85);
+  ctx.stroke();
+
+  // Warm LED cove wash lighting gradient along bottom edge
+  const coveGlow = ctx.createLinearGradient(0, canvas.height, 0, canvas.height * 0.4);
+  coveGlow.addColorStop(0, 'rgba(255, 230, 170, 0.45)');
+  coveGlow.addColorStop(1, 'rgba(255, 230, 170, 0.0)');
+  ctx.fillStyle = coveGlow;
+  ctx.fillRect(0, canvas.height * 0.35, canvas.width, canvas.height * 0.65);
+
+  // 3D Metallic Bronze Thuluth Arabic Script
+  // With soft drop shadow to simulate floating off the wall (as in user's photo)
+  ctx.shadowColor = 'rgba(20, 10, 5, 0.45)';
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 6;
+  ctx.shadowOffsetY = 8;
+
+  ctx.font = 'bold 96px "Amiri", "Scheherazade New", "Traditional Arabic", serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Metallic Bronze Gradient for the sculpted letters
+  const bronzeGrad = ctx.createLinearGradient(0, 80, 0, 360);
+  bronzeGrad.addColorStop(0, '#5e432c');
+  bronzeGrad.addColorStop(0.3, '#8f6847');
+  bronzeGrad.addColorStop(0.6, '#b8895b');
+  bronzeGrad.addColorStop(0.85, '#6a4a2f');
+  bronzeGrad.addColorStop(1, '#422c1b');
+  ctx.fillStyle = bronzeGrad;
+
+  // Text 1 (Long phrase inspired by Quranic Thuluth script from photo)
+  const arabicText1 = 'وَمَن تَطَوَّعَ خَيْرًا فَإِنَّ اللَّهَ شَاكِرٌ عَلِيمٌ';
+  ctx.fillText(arabicText1, canvas.width * 0.4, canvas.height * 0.45);
+
+  // Text 2 (Divine Names on the right, as seen in user reference photo: "الْمُغْنِي", "الْمَانِعُ")
+  ctx.font = 'bold 115px "Amiri", "Scheherazade New", "Traditional Arabic", serif';
+  const name1 = 'الْمَانِعُ';
+  const name2 = 'الْمُغْنِي';
+  ctx.fillText(name1, canvas.width * 0.78, canvas.height * 0.45);
+  ctx.fillText(name2, canvas.width * 0.91, canvas.height * 0.45);
+
+  // High-contrast beveled edge highlights on letters
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = 'rgba(255, 225, 175, 0.45)';
+  ctx.lineWidth = 1.5;
+  ctx.font = 'bold 96px "Amiri", "Scheherazade New", "Traditional Arabic", serif';
+  ctx.strokeText(arabicText1, canvas.width * 0.4, canvas.height * 0.45);
+  ctx.font = 'bold 115px "Amiri", "Scheherazade New", "Traditional Arabic", serif';
+  ctx.strokeText(name1, canvas.width * 0.78, canvas.height * 0.45);
+  ctx.strokeText(name2, canvas.width * 0.91, canvas.height * 0.45);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+export function getBookshelfCubbyTexture(): THREE.CanvasTexture {
+  const cacheKey = 'quran_bookshelf_cubby_texture';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  // Dark walnut cubby background
+  ctx.fillStyle = '#2b1b11';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Bookshelf wood dividers
+  ctx.fillStyle = '#3f281a';
+  ctx.fillRect(0, canvas.height - 30, canvas.width, 30); // Bottom shelf
+  ctx.fillRect(0, 0, canvas.width, 25); // Top shelf
+
+  // Leather-bound Holy Quran books with gilded Arabic spines
+  const bookColors = ['#133827', '#4a1515', '#1a2e40', '#184732', '#361b2b', '#103224'];
+  let currentX = 25;
+
+  while (currentX < canvas.width - 40) {
+    const bookW = 28 + Math.floor(Math.random() * 18);
+    const bookH = canvas.height - 70 - Math.floor(Math.random() * 25);
+    const color = bookColors[Math.floor(Math.random() * bookColors.length)];
+
+    ctx.fillStyle = color;
+    ctx.fillRect(currentX, canvas.height - 30 - bookH, bookW, bookH);
+
+    // Gold spine bands
+    ctx.fillStyle = '#d4af37';
+    ctx.fillRect(currentX + 2, canvas.height - 30 - bookH + 20, bookW - 4, 4);
+    ctx.fillRect(currentX + 2, canvas.height - 30 - bookH + 32, bookW - 4, 3);
+    ctx.fillRect(currentX + 2, canvas.height - 30 - 30, bookW - 4, 4);
+
+    // Gold Arabic medallion on spine
+    ctx.beginPath();
+    ctx.arc(currentX + bookW / 2, canvas.height - 30 - bookH / 2, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Shadow between books
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillRect(currentX + bookW - 2, canvas.height - 30 - bookH, 2, bookH);
+
+    currentX += bookW + 2;
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+export function getModernBrassSconceTexture(): THREE.CanvasTexture {
+  const cacheKey = 'modern_brass_star_sconce';
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  // Brushed brass face plate
+  const brassGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  brassGrad.addColorStop(0, '#cda250');
+  brassGrad.addColorStop(0.5, '#e4c478');
+  brassGrad.addColorStop(1, '#b58b38');
+  ctx.fillStyle = brassGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Laser-cut 8-point geometric star perforation
+  const drawStar = (cx: number, cy: number, r: number) => {
+    ctx.fillStyle = '#fffae8'; // Glowing light core
+    ctx.beginPath();
+    for (let i = 0; i < 16; i++) {
+      const radius = i % 2 === 0 ? r : r * 0.45;
+      const angle = (i * Math.PI) / 8;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#4a3311';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  };
+
+  drawStar(canvas.width / 2, canvas.height / 2, 140);
+  drawStar(canvas.width / 2, 60, 45);
+  drawStar(canvas.width / 2, canvas.height - 60, 45);
+  drawStar(60, canvas.height / 2, 45);
+  drawStar(canvas.width - 60, canvas.height / 2, 45);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  textureCache.set(cacheKey, texture);
+  return texture;
+}
+
+

@@ -373,6 +373,7 @@ export const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                     ...roomConfig,
                     flooring: !currentIsMasjid ? 'mosque-carpet-emerald' : roomConfig.flooring,
                     masjidConfig: {
+                      ...(roomConfig.masjidConfig || {}),
                       isMasjid: !currentIsMasjid,
                       qiblaWallFeet: 40.9,
                       leftWallFeet: 73.5,
@@ -385,7 +386,7 @@ export const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                       saffSpacingMeters: 1.2,
                       saffColor: '#d4af37',
                       estimatedCapacity: 310,
-                    },
+                    } as any,
                   });
                 }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
@@ -449,6 +450,205 @@ export const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   >
                     <div className="w-4 h-4 rounded-full bg-white shadow-md" />
                   </button>
+                </div>
+
+                {/* Persian Iwan Three Side Walls Design Section */}
+                <div className="bg-slate-900/90 p-3.5 rounded-xl border border-teal-500/40 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold text-teal-300">
+                          Three Side Walls Interior Design (Except Qibla)
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-900/80 text-teal-200 border border-teal-500/30 font-mono">
+                          Persian Iwan Style
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Authentic Isfahan / Shah Mosque architectural elements on West, East &amp; South perimeter walls
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const currentVal = roomConfig.masjidConfig?.traditionalIslamicWalls !== false;
+                        onUpdateConfig({
+                          ...roomConfig,
+                          masjidConfig: {
+                            ...roomConfig.masjidConfig!,
+                            traditionalIslamicWalls: !currentVal,
+                            islamicWallStyle: 'persian-iwan',
+                          },
+                        });
+                      }}
+                      className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
+                        roomConfig.masjidConfig?.traditionalIslamicWalls !== false
+                          ? 'bg-teal-500 justify-end'
+                          : 'bg-slate-700 justify-start'
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                    </button>
+                  </div>
+
+                  {roomConfig.masjidConfig?.traditionalIslamicWalls !== false && (
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800 text-[11px]">
+                      {/* Muqarnas Vaulting */}
+                      <button
+                        onClick={() => {
+                          const pCfg = roomConfig.masjidConfig?.persianIwanConfig || {};
+                          onUpdateConfig({
+                            ...roomConfig,
+                            masjidConfig: {
+                              ...roomConfig.masjidConfig!,
+                              islamicWallStyle: 'persian-iwan',
+                              persianIwanConfig: {
+                                ...pCfg,
+                                showMuqarnasVaulting: pCfg.showMuqarnasVaulting === false,
+                              },
+                            },
+                          });
+                        }}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
+                          roomConfig.masjidConfig?.persianIwanConfig?.showMuqarnasVaulting !== false
+                            ? 'bg-teal-950/40 border-teal-500/40 text-teal-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <span>Muqarnas Vaulting (مقرنس)</span>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Orosi Stained Glass */}
+                      <button
+                        onClick={() => {
+                          const pCfg = roomConfig.masjidConfig?.persianIwanConfig || {};
+                          onUpdateConfig({
+                            ...roomConfig,
+                            masjidConfig: {
+                              ...roomConfig.masjidConfig!,
+                              islamicWallStyle: 'persian-iwan',
+                              persianIwanConfig: {
+                                ...pCfg,
+                                showOrosiStainedGlass: pCfg.showOrosiStainedGlass === false,
+                              },
+                            },
+                          });
+                        }}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
+                          roomConfig.masjidConfig?.persianIwanConfig?.showOrosiStainedGlass !== false
+                            ? 'bg-teal-950/40 border-teal-500/40 text-teal-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <span>Orosi Glass &amp; Girih (پنجره ارسی)</span>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Taqcheh Quran Alcoves */}
+                      <button
+                        onClick={() => {
+                          const pCfg = roomConfig.masjidConfig?.persianIwanConfig || {};
+                          onUpdateConfig({
+                            ...roomConfig,
+                            masjidConfig: {
+                              ...roomConfig.masjidConfig!,
+                              islamicWallStyle: 'persian-iwan',
+                              persianIwanConfig: {
+                                ...pCfg,
+                                showTaqchehQuranAlcoves: pCfg.showTaqchehQuranAlcoves === false,
+                              },
+                            },
+                          });
+                        }}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
+                          roomConfig.masjidConfig?.persianIwanConfig?.showTaqchehQuranAlcoves !== false
+                            ? 'bg-teal-950/40 border-teal-500/40 text-teal-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <span>Taqcheh Quran Alcoves (طاقچه)</span>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Persian Pierced Brass Lanterns */}
+                      <button
+                        onClick={() => {
+                          const pCfg = roomConfig.masjidConfig?.persianIwanConfig || {};
+                          onUpdateConfig({
+                            ...roomConfig,
+                            masjidConfig: {
+                              ...roomConfig.masjidConfig!,
+                              islamicWallStyle: 'persian-iwan',
+                              persianIwanConfig: {
+                                ...pCfg,
+                                showPersianLamps: pCfg.showPersianLamps === false,
+                              },
+                            },
+                          });
+                        }}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
+                          roomConfig.masjidConfig?.persianIwanConfig?.showPersianLamps !== false
+                            ? 'bg-teal-950/40 border-teal-500/40 text-teal-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <span>Suspended Lanterns (چراغ)</span>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Marble Izareh Wainscot */}
+                      <button
+                        onClick={() => {
+                          const pCfg = roomConfig.masjidConfig?.persianIwanConfig || {};
+                          onUpdateConfig({
+                            ...roomConfig,
+                            masjidConfig: {
+                              ...roomConfig.masjidConfig!,
+                              islamicWallStyle: 'persian-iwan',
+                              persianIwanConfig: {
+                                ...pCfg,
+                                showMarbleIzareh: pCfg.showMarbleIzareh === false,
+                              },
+                            },
+                          });
+                        }}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
+                          roomConfig.masjidConfig?.persianIwanConfig?.showMarbleIzareh !== false
+                            ? 'bg-teal-950/40 border-teal-500/40 text-teal-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <span>Alabaster Izareh (ازاره)</span>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Thuluth Katibeh Calligraphy */}
+                      <button
+                        onClick={() => {
+                          const pCfg = roomConfig.masjidConfig?.persianIwanConfig || {};
+                          onUpdateConfig({
+                            ...roomConfig,
+                            masjidConfig: {
+                              ...roomConfig.masjidConfig!,
+                              islamicWallStyle: 'persian-iwan',
+                              persianIwanConfig: {
+                                ...pCfg,
+                                showPersianKatibehFrieze: pCfg.showPersianKatibehFrieze === false,
+                              },
+                            },
+                          });
+                        }}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors ${
+                          roomConfig.masjidConfig?.persianIwanConfig?.showPersianKatibehFrieze !== false
+                            ? 'bg-teal-950/40 border-teal-500/40 text-teal-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <span>Katibeh Frieze (کتیبه ثلث)</span>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

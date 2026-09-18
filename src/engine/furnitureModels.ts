@@ -5,6 +5,7 @@ import {
   getIslamicGeometricTileTexture,
   getCalligraphyMedallionTexture,
   getMihrabArchPanelTexture,
+  getFloatingBronzeCalligraphyTexture,
 } from './proceduralTextures';
 
 // Helper to create a Mesh with shadows enabled
@@ -2435,6 +2436,115 @@ export function buildFurnitureModel(
         const accent = createMesh(new THREE.BoxGeometry(w * 0.9, 0.04, d * 0.9), secondaryMat);
         accent.position.y = h;
         group.add(accent);
+      }
+      break;
+    }
+
+    // ----------------------------------------------------
+    // INTERIOR WALL IMAGE & ARTWORK DECAL PASTER
+    // Mounts photos, artwork, reference plans, and Islamic calligraphy onto interior walls
+    // ----------------------------------------------------
+    case 'wall-image-poster':
+    case 'interior-image-decal': {
+      const w = dimensions?.width || 2.0;
+      const h = dimensions?.height || 1.4;
+      const depth = Math.max(0.02, dimensions?.depth || 0.04);
+      const frameStyle = customData?.frameStyle || 'walnut-frame';
+      const imageUrl = customData?.imageUrl;
+
+      let imageTexture: THREE.Texture;
+      if (imageUrl && imageUrl.length > 5) {
+        const textureLoader = new THREE.TextureLoader();
+        imageTexture = textureLoader.load(imageUrl);
+        imageTexture.colorSpace = THREE.SRGBColorSpace;
+      } else {
+        // Fallback to high-res procedural calligraphy
+        imageTexture = getFloatingBronzeCalligraphyTexture();
+      }
+
+      const canvasFrontMat = new THREE.MeshStandardMaterial({
+        map: imageTexture,
+        roughness: 0.35,
+        metalness: 0.08,
+        side: THREE.DoubleSide,
+      });
+
+      // Frame materials
+      let frameMat: THREE.Material = mainMat;
+      if (frameStyle === 'walnut-frame') {
+        frameMat = new THREE.MeshStandardMaterial({
+          color: 0x362114,
+          roughness: 0.6,
+          metalness: 0.1,
+        });
+      } else if (frameStyle === 'gold-frame') {
+        frameMat = new THREE.MeshStandardMaterial({
+          color: 0xd4af37,
+          roughness: 0.25,
+          metalness: 0.85,
+        });
+      } else if (frameStyle === 'black-frame') {
+        frameMat = new THREE.MeshStandardMaterial({
+          color: 0x18181b,
+          roughness: 0.4,
+          metalness: 0.7,
+        });
+      } else {
+        frameMat = new THREE.MeshStandardMaterial({
+          color: 0xf4eee2,
+          roughness: 0.7,
+        });
+      }
+
+      // 6-sided box with photo on the front facing +Z
+      const boxMaterials = [
+        frameMat, // right (+X)
+        frameMat, // left (-X)
+        frameMat, // top (+Y)
+        frameMat, // bottom (-Y)
+        canvasFrontMat, // front (+Z - facing into the room)
+        frameMat, // back (-Z - against the wall)
+      ];
+
+      const canvasMesh = createMesh(new THREE.BoxGeometry(w, h, depth), boxMaterials as any);
+      canvasMesh.position.set(0, h / 2, 0);
+      group.add(canvasMesh);
+
+      // Add framed perimeter border if not frameless
+      if (frameStyle !== 'frameless') {
+        const borderThick = 0.045;
+        const borderDepth = depth + 0.015;
+
+        // Top rail
+        const topRail = createMesh(new THREE.BoxGeometry(w + borderThick * 2, borderThick, borderDepth), frameMat);
+        topRail.position.set(0, h + borderThick / 2, 0.005);
+        // Bottom rail
+        const btmRail = createMesh(new THREE.BoxGeometry(w + borderThick * 2, borderThick, borderDepth), frameMat);
+        btmRail.position.set(0, -borderThick / 2, 0.005);
+        // Left stile
+        const leftStile = createMesh(new THREE.BoxGeometry(borderThick, h, borderDepth), frameMat);
+        leftStile.position.set(-w / 2 - borderThick / 2, h / 2, 0.005);
+        // Right stile
+        const rightStile = createMesh(new THREE.BoxGeometry(borderThick, h, borderDepth), frameMat);
+        rightStile.position.set(w / 2 + borderThick / 2, h / 2, 0.005);
+
+        group.add(topRail, btmRail, leftStile, rightStile);
+      }
+
+      // Backlit floating LED halo glow effect
+      if (frameStyle === 'backlit-floating') {
+        const haloMat = new THREE.MeshBasicMaterial({
+          color: 0xffe8ba,
+          transparent: true,
+          opacity: 0.65,
+        });
+        const haloMesh = createMesh(new THREE.BoxGeometry(w + 0.18, h + 0.18, 0.008), haloMat);
+        haloMesh.position.set(0, h / 2, -depth / 2 - 0.01);
+        group.add(haloMesh);
+
+        const warmLight = new THREE.PointLight(0xffe2a0, 0.65, 3.5, 1.5);
+        warmLight.position.set(0, h / 2, -0.05);
+        group.add(warmLight);
       }
       break;
     }

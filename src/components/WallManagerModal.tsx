@@ -14,6 +14,9 @@ import {
   Columns as ColumnsIcon,
   Maximize2,
   Box,
+  PenTool,
+  Image as ImageIcon,
+  Sparkles,
 } from 'lucide-react';
 import {
   RoomConfig,
@@ -31,6 +34,8 @@ interface WallManagerModalProps {
   onStartCursorPlacement: (item: any, options?: any) => void;
   onAddDirectWall: (wallItem: PlacedFurnitureItem) => void;
   onOpenOfficeGrid?: () => void;
+  onOpenImagePaster?: () => void;
+  onSwitchTo2DDrawWall?: () => void;
 }
 
 type TabType = 'make-wall' | 'remove-walls' | 'wall-sizes' | 'structural-grid';
@@ -45,11 +50,20 @@ export const WallManagerModal: React.FC<WallManagerModalProps> = ({
   onStartCursorPlacement,
   onAddDirectWall,
   onOpenOfficeGrid,
+  onOpenImagePaster,
+  onSwitchTo2DDrawWall,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('make-wall');
 
   // "Make Wall" State
-  const [wallType, setWallType] = useState<'custom-masonry-wall' | 'drywall-partition' | 'glass-steel-partition' | 'pony-wall'>('custom-masonry-wall');
+  const [wallType, setWallType] = useState<
+    | 'custom-masonry-wall'
+    | 'travertine-ashlar-wall'
+    | 'walnut-timber-wall'
+    | 'drywall-partition'
+    | 'glass-steel-partition'
+    | 'pony-wall'
+  >('travertine-ashlar-wall');
   const [wallLengthFt, setWallLengthFt] = useState<number>(15);
   const [wallHeightFt, setWallHeightFt] = useState<number>(19);
   const [wallThickMm, setWallThickMm] = useState<number>(230); // 230 mm = 9"
@@ -58,7 +72,7 @@ export const WallManagerModal: React.FC<WallManagerModalProps> = ({
   if (!isOpen) return null;
 
   const ft2m = 0.3048;
-  const mCfg = roomConfig.masjidConfig || {};
+  const mCfg: any = roomConfig.masjidConfig || {};
 
   const wallVis: WallVisibilityConfig = roomConfig.wallVisibility || {
     north: true,
@@ -82,24 +96,69 @@ export const WallManagerModal: React.FC<WallManagerModalProps> = ({
     });
   };
 
-  const handleCreateCustomWall = (mode: 'cursor' | 'center') => {
+  const handleCreateCustomWall = (
+    mode: 'cursor' | 'center' | 'west-wall' | 'east-wall' | 'south-wall' | 'musalla-divide'
+  ) => {
     const widthMeters = Math.round(wallLengthFt * ft2m * 100) / 100;
     const heightMeters = Math.round(wallHeightFt * ft2m * 100) / 100;
     const depthMeters = Math.round((wallThickMm / 1000) * 100) / 100;
 
+    let posX = 0;
+    let posZ = 0;
+    let rotY = 0;
+
+    const rw = roomConfig.width;
+    const rl = roomConfig.length;
+
+    if (mode === 'west-wall') {
+      posX = -rw / 2 + depthMeters / 2 + 0.1;
+      posZ = 0;
+      rotY = Math.PI / 2;
+    } else if (mode === 'east-wall') {
+      posX = rw / 2 - depthMeters / 2 - 0.1;
+      posZ = 0;
+      rotY = -Math.PI / 2;
+    } else if (mode === 'south-wall') {
+      posX = 0;
+      posZ = rl / 2 - depthMeters / 2 - 0.1;
+      rotY = 0;
+    } else if (mode === 'musalla-divide') {
+      posX = 0;
+      posZ = 0;
+      rotY = 0;
+    }
+
+    const typeLabel =
+      wallType === 'travertine-ashlar-wall'
+        ? 'Travertine Ashlar Wall'
+        : wallType === 'walnut-timber-wall'
+        ? 'Walnut Timber Wall'
+        : wallType === 'custom-masonry-wall'
+        ? 'Solid Masonry Wall'
+        : wallType === 'drywall-partition'
+        ? 'Drywall Stud Partition'
+        : wallType === 'glass-steel-partition'
+        ? 'Glass & Steel Partition'
+        : 'Architectural Pony Wall';
+
     const wallItem: PlacedFurnitureItem = {
       id: `wall_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      name: `${wallType === 'custom-masonry-wall' ? 'Solid Masonry Wall' : wallType === 'drywall-partition' ? 'Drywall Stud Partition' : wallType === 'glass-steel-partition' ? 'Glass & Steel Partition' : 'Architectural Pony Wall'} (${wallLengthFt} ft)`,
+      name: `${typeLabel} (${wallLengthFt} ft)`,
       category: 'architectural',
-      modelType: wallType,
-      position: [0, 0, 0],
-      rotationY: 0,
+      modelType: wallType === 'travertine-ashlar-wall' || wallType === 'walnut-timber-wall' ? 'custom-masonry-wall' : wallType,
+      position: [posX, 0, posZ],
+      rotationY: rotY,
       dimensions: {
         width: widthMeters,
         height: heightMeters,
         depth: depthMeters,
       },
-      color: wallColor,
+      color:
+        wallType === 'travertine-ashlar-wall'
+          ? '#faf6ec'
+          : wallType === 'walnut-timber-wall'
+          ? '#3a2416'
+          : wallColor,
       price: 0,
     };
 
@@ -109,7 +168,7 @@ export const WallManagerModal: React.FC<WallManagerModalProps> = ({
         width: widthMeters,
         height: heightMeters,
         depth: depthMeters,
-        color: wallColor,
+        color: wallItem.color,
       });
     } else {
       onAddDirectWall(wallItem);
@@ -189,12 +248,71 @@ export const WallManagerModal: React.FC<WallManagerModalProps> = ({
           {/* TAB 1: MAKE WALL */}
           {activeTab === 'make-wall' && (
             <div className="space-y-6">
+              {/* Quick Action Tools Banner */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onSwitchTo2DDrawWall) {
+                      onSwitchTo2DDrawWall();
+                    }
+                  }}
+                  className="p-3 bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/45 hover:to-amber-500/30 border border-amber-500/50 rounded-xl text-left flex items-center gap-3 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300 group-hover:scale-110 transition-transform">
+                    <PenTool className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>Draw Wall in 2D Floor Plan</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-200">Interactive</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400">Click start and end points to draft continuous walls directly</p>
+                  </div>
+                </button>
+
+                {onOpenImagePaster && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenImagePaster();
+                    }}
+                    className="p-3 bg-gradient-to-r from-yellow-600/25 to-amber-600/20 hover:from-yellow-600/40 hover:to-amber-600/35 border border-yellow-500/40 rounded-xl text-left flex items-center gap-3 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-300 group-hover:scale-110 transition-transform">
+                      <ImageIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <span>Paste Images & Decals on Walls</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-yellow-500/30 text-yellow-200">Ctrl+V</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">Mount photos, artwork, and calligraphy with walnut or halo frames</p>
+                    </div>
+                  </button>
+                )}
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3">
-                  Select Wall Type to Construct
+                  Select Architectural Wall Material & Style
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
+                    {
+                      id: 'travertine-ashlar-wall',
+                      name: 'Travertine Ashlar Wall',
+                      desc: 'Luxury honed travertine stone with fine grout joints (Theme Match)',
+                      defaultThick: 230,
+                    },
+                    {
+                      id: 'walnut-timber-wall',
+                      name: 'Walnut Timber Wall',
+                      desc: 'Architectural dark walnut post-and-beam woodwork (Theme Match)',
+                      defaultThick: 200,
+                    },
                     {
                       id: 'custom-masonry-wall',
                       name: 'Solid Masonry Wall',
@@ -394,21 +512,52 @@ export const WallManagerModal: React.FC<WallManagerModalProps> = ({
               </div>
 
               {/* Placement Trigger Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-slate-800">
-                <button
-                  onClick={() => handleCreateCustomWall('cursor')}
-                  className="flex-1 py-3 px-4 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition-all"
-                >
-                  <Move className="w-4 h-4" />
-                  Move with Cursor & Place Anywhere on Plan
-                </button>
-                <button
-                  onClick={() => handleCreateCustomWall('center')}
-                  className="py-3 px-5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-sm flex items-center justify-center gap-2 border border-slate-700 transition-all"
-                >
-                  <Building className="w-4 h-4" />
-                  Place at Room Center
-                </button>
+              <div className="space-y-2 pt-3 border-t border-slate-800">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                  Quick Placement Locations:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCreateCustomWall('center')}
+                    className="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Building className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Room Center</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCreateCustomWall('west-wall')}
+                    className="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>West Long Wall</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCreateCustomWall('east-wall')}
+                    className="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>East Long Wall</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCreateCustomWall('south-wall')}
+                    className="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>South Rear Wall</span>
+                  </button>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCreateCustomWall('cursor')}
+                    className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition-all"
+                  >
+                    <Move className="w-4 h-4" />
+                    <span>Move with Cursor & Place Anywhere on Plan / 3D Scene</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

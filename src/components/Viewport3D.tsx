@@ -56,44 +56,63 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
   onToggleGridSnap,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [initError, setInitError] = React.useState<string | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const manager = new SceneManager(
-      containerRef.current,
-      roomConfig,
-      items,
-      {
-        onItemSelected: (it) => onSelectItem(it),
-        onItemMoved: (it) => onUpdateItem(it),
-      }
-    );
+    try {
+      const manager = new SceneManager(
+        containerRef.current,
+        roomConfig,
+        items,
+        {
+          onItemSelected: (it) => onSelectItem(it),
+          onItemMoved: (it) => onUpdateItem(it),
+        }
+      );
 
-    sceneManagerRef.current = manager;
+      sceneManagerRef.current = manager;
+      setInitError(null);
 
-    return () => {
-      manager.dispose();
-      sceneManagerRef.current = null;
-    };
+      return () => {
+        manager.dispose();
+        sceneManagerRef.current = null;
+      };
+    } catch (err: any) {
+      console.error('Failed to initialize 3D WebGL SceneManager:', err);
+      setInitError(err?.message || 'WebGL 3D Context could not be initialized.');
+    }
   }, []); // Run once on mount
 
   // Sync updates to manager when dependencies change
   useEffect(() => {
     if (sceneManagerRef.current) {
-      sceneManagerRef.current.syncFurnitureItems(items);
+      try {
+        sceneManagerRef.current.syncFurnitureItems(items);
+      } catch (err) {
+        console.error('Error syncing items:', err);
+      }
     }
   }, [items]);
 
   useEffect(() => {
     if (sceneManagerRef.current) {
-      sceneManagerRef.current.updateRoomConfig(roomConfig);
+      try {
+        sceneManagerRef.current.updateRoomConfig(roomConfig);
+      } catch (err) {
+        console.error('Error updating roomConfig:', err);
+      }
     }
   }, [roomConfig]);
 
   useEffect(() => {
     if (sceneManagerRef.current) {
-      sceneManagerRef.current.setCameraMode(cameraMode);
+      try {
+        sceneManagerRef.current.setCameraMode(cameraMode);
+      } catch (err) {
+        console.error('Error setting camera mode:', err);
+      }
     }
   }, [cameraMode]);
 
@@ -101,6 +120,24 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     <div className="relative w-full h-full overflow-hidden select-none bg-slate-950">
       {/* Three.js Canvas Container */}
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+
+      {/* WebGL Init Error Fallback */}
+      {initError && (
+        <div className="absolute inset-0 bg-slate-950/90 backdrop-blur flex items-center justify-center p-6 z-40">
+          <div className="max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-3">
+            <h3 className="text-lg font-bold text-white">3D Canvas Initializing</h3>
+            <p className="text-xs text-slate-400">
+              {initError}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl"
+            >
+              Reload Studio
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Floating Item Inspector */}
       {selectedItem && (

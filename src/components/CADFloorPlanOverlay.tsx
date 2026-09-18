@@ -1084,19 +1084,19 @@ export const CADFloorPlanOverlay: React.FC<CADFloorPlanOverlayProps> = ({
               }
 
               // 20 feet (6.096m) spacing between both center column lines (10 ft / 3.048m each side of center)
-              const colSpacingFt = sm.roomConfig.masjidConfig?.columnSpacingFeet || 20;
+              const colSpacingFt = roomConfig.masjidConfig?.columnSpacingFeet || 20;
               const halfSpacingM = (colSpacingFt * 0.3048) / 2; // 3.048m (10 ft)
               const xCadL = -halfSpacingM;
               const xCadR = +halfSpacingM;
 
               // Right Corner Main Gate calculations
-              const isRightCornerGate = sm.roomConfig.masjidConfig?.gatePosition !== 'center';
-              const isDiagonalGate = sm.roomConfig.masjidConfig?.isDiagonalGate ?? (sm.roomConfig.masjidConfig?.gatePosition === 'diagonal-corner');
-              const gateDepthFt = sm.roomConfig.masjidConfig?.gateDepthFeet || 6.0;
+              const isRightCornerGate = roomConfig.masjidConfig?.gatePosition !== 'center';
+              const isDiagonalGate = roomConfig.masjidConfig?.isDiagonalGate ?? (roomConfig.masjidConfig?.gatePosition === 'diagonal-corner');
+              const gateDepthFt = roomConfig.masjidConfig?.gateDepthFeet || 6.0;
               const gateDepthM = gateDepthFt * 0.3048;
               const diagLegM = gateDepthM * Math.SQRT2;
 
-              const gateSpanM = (sm.roomConfig.masjidConfig?.gateWidthFeet || 12) * 0.3048;
+              const gateSpanM = (roomConfig.masjidConfig?.gateWidthFeet || 12) * 0.3048;
               const rightPierW = 0.65;
               const xGateR_flat = +wB / 2 - rightPierW;
               const xGateL_flat = xGateR_flat - gateSpanM;

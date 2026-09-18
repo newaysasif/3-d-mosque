@@ -21,6 +21,7 @@ import {
   FolderOpen,
   PenTool,
   Grid,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -35,6 +36,8 @@ interface HeaderProps {
   onOpenRoomSettings: () => void;
   onOpenWallManager?: () => void;
   onOpenOfficeGrid?: () => void;
+  onOpenImagePaster?: () => void;
+  onOpenDrawWall?: () => void;
   onOpenTemplates: () => void;
   onOpenAIStylist: () => void;
   onOpenBOM: () => void;
@@ -66,6 +69,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenRoomSettings,
   onOpenWallManager,
   onOpenOfficeGrid,
+  onOpenImagePaster,
+  onOpenDrawWall,
   onOpenTemplates,
   onOpenAIStylist,
   onOpenBOM,
@@ -302,15 +307,40 @@ export const Header: React.FC<HeaderProps> = ({
           <SlidersHorizontal className="w-4 h-4" />
         </button>
 
+        {/* Draw & Build Walls */}
+        <button
+          onClick={onOpenDrawWall || onOpenWallManager}
+          className="px-2.5 py-1.5 rounded-xl bg-amber-600/25 hover:bg-amber-600/40 border border-amber-500/50 text-amber-200 flex items-center gap-1.5 text-xs font-semibold shadow-sm transition-all"
+          title="Draw & Build Walls: Parametric builder, interactive 2D sketch, custom thickness, height, and luxury travertine/walnut materials"
+        >
+          <PenTool className="w-3.5 h-3.5 text-amber-300" />
+          <span className="hidden sm:inline">Draw/Build Walls</span>
+        </button>
+
+        {/* Interior Image & Artwork Decal Paster */}
+        {onOpenImagePaster && (
+          <button
+            onClick={onOpenImagePaster}
+            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600/30 to-yellow-600/25 hover:from-amber-600/45 hover:to-yellow-600/40 border border-amber-400/50 text-amber-200 flex items-center gap-1.5 text-xs font-semibold shadow-sm transition-all"
+            title="Paste Images, Artwork, and Calligraphy onto Interior Walls (Supports Ctrl+V from clipboard!)"
+          >
+            <ImageIcon className="w-3.5 h-3.5 text-yellow-300" />
+            <span className="hidden md:inline">Paste Image</span>
+            <span className="hidden lg:inline text-[10px] px-1 py-0.2 rounded bg-amber-500/30 text-amber-200 font-mono font-bold">
+              Ctrl+V
+            </span>
+          </button>
+        )}
+
         {/* Walls & Columns Manager */}
         {onOpenWallManager && (
           <button
             onClick={onOpenWallManager}
-            className="px-2.5 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 flex items-center gap-1.5 text-xs font-semibold shadow-sm transition-all"
-            title="Make / Remove Walls, Custom Wall Sizes & 26-Column Structural Grid"
+            className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 flex items-center gap-1.5 text-xs font-semibold shadow-sm transition-all"
+            title="Wall Sizes, Visibility & 26-Column Structural Grid"
           >
             <Layers className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Walls</span>
+            <span className="hidden xl:inline">Wall Settings</span>
           </button>
         )}
 

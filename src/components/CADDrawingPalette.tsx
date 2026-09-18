@@ -33,6 +33,7 @@ import {
   ChevronUp,
   ChevronDown,
   PenTool,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface CADDrawingPaletteProps {
@@ -49,6 +50,7 @@ interface CADDrawingPaletteProps {
   onUpdateDraftingState?: (state: LiveDraftingState | null) => void;
   onGenerate3D: () => void;
   onClosePalette?: () => void;
+  onOpenImagePaster?: () => void;
 }
 
 export const CADDrawingPalette: React.FC<CADDrawingPaletteProps> = ({
@@ -65,6 +67,7 @@ export const CADDrawingPalette: React.FC<CADDrawingPaletteProps> = ({
   onUpdateDraftingState,
   onGenerate3D,
   onClosePalette,
+  onOpenImagePaster,
 }) => {
   // Wall / Partition tool config
   const [wallStyle, setWallStyle] = useState<WallDrawStyle>('custom-masonry-wall');
@@ -213,8 +216,19 @@ export const CADDrawingPalette: React.FC<CADDrawingPaletteProps> = ({
     let name = 'Architectural Masonry Wall';
     let modelType = wallStyle;
     let secColor = '#cbd5e1';
+    let pColor = wallColor;
 
-    if (wallStyle === 'glass-steel-partition') {
+    if (wallStyle === 'travertine-ashlar-wall') {
+      name = 'Honed Travertine Ashlar Wall';
+      modelType = 'custom-masonry-wall';
+      pColor = '#faf6ec';
+      secColor = '#e8dfcc';
+    } else if (wallStyle === 'walnut-timber-wall') {
+      name = 'Architectural Walnut Timber Wall';
+      modelType = 'custom-masonry-wall';
+      pColor = '#3a2416';
+      secColor = '#24140a';
+    } else if (wallStyle === 'glass-steel-partition') {
       name = 'Glass & Steel Partition Wall';
       secColor = '#1e293b';
     } else if (wallStyle === 'fluted-wood-divider') {
@@ -236,7 +250,7 @@ export const CADDrawingPalette: React.FC<CADDrawingPaletteProps> = ({
         depth: parseFloat(thick.toFixed(2)),
         height: parseFloat(h.toFixed(2)),
       },
-      color: wallColor,
+      color: pColor,
       secondaryColor: secColor,
       price: Math.round(len * 120),
       customData: {
@@ -816,6 +830,18 @@ export const CADDrawingPalette: React.FC<CADDrawingPaletteProps> = ({
           <span>Measure</span>
         </button>
 
+        {/* Paste Image / Artwork Decal */}
+        {onOpenImagePaster && (
+          <button
+            onClick={onOpenImagePaster}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30"
+            title="Paste Image / Calligraphy / Tile Pattern onto Walls (Ctrl+V)"
+          >
+            <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+            <span>Paste Image</span>
+          </button>
+        )}
+
         <div className="w-px h-5 bg-slate-700 mx-1" />
 
         {/* THE HIGHEST PRIORITY USER ACTION: GENERATE 3D AFTER SKETCHING */}
@@ -898,6 +924,8 @@ export const CADDrawingPalette: React.FC<CADDrawingPaletteProps> = ({
                 className="bg-slate-800 text-slate-200 rounded px-2 py-0.5 border border-slate-700 focus:outline-none focus:border-blue-500 text-[11px]"
               >
                 <option value="custom-masonry-wall">Masonry Solid Wall</option>
+                <option value="travertine-ashlar-wall">Travertine Ashlar Wall (Luxury)</option>
+                <option value="walnut-timber-wall">Walnut Timber Wall (Luxury)</option>
                 <option value="drywall-partition">Drywall Partition</option>
                 <option value="glass-steel-partition">Glass & Steel</option>
                 <option value="fluted-wood-divider">Fluted Wood</option>

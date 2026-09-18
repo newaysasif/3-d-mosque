@@ -94,14 +94,46 @@ export interface MasjidConfig {
 
   // Traditional Islamic Perimeter Wall Architecture (West, East & South walls)
   traditionalIslamicWalls?: boolean; // Default true - traditional Islamic architectural ornamentation on all 3 perimeter walls
-  islamicWallStyle?: 'andalusian-moroccan' | 'ottoman-imperial' | 'mamluk-cairo';
+  islamicWallStyle?:
+    | 'contemporary-mashrabiya-timber'
+    | 'persian-iwan'
+    | 'andalusian-moroccan'
+    | 'ottoman-imperial'
+    | 'mamluk-cairo';
   showPerimeterCalligraphyFrieze?: boolean; // Continuous upper Quranic calligraphy frieze
-  showPerimeterArchedBays?: boolean; // Pointed horseshoe arches with Ablaq voussoirs & Mashrabiya jali screens
-  showPerimeterZelligeWainscot?: boolean; // Moroccan Zellige geometric tile wainscot (1.38m) with gold chair rail
-  showPerimeterQuranAlcoves?: boolean; // Recessed Holy Quran bookshelf niches (Taqah)
-  showPerimeterMishkatLamps?: boolean; // Brass wall-mounted Islamic lanterns with warm ambient glow
+  showPerimeterArchedBays?: boolean; // Pointed horseshoe / Persian 4-centered arches
+  showPerimeterZelligeWainscot?: boolean; // Lower wainscot (Persian Izareh or Moroccan Zellige)
+  showPerimeterQuranAlcoves?: boolean; // Recessed Holy Quran bookshelf niches (Taqcheh)
+  showPerimeterMishkatLamps?: boolean; // Brass wall-mounted/hanging Islamic lanterns
   showPrayerTimeBoard?: boolean; // Traditional arched prayer times clock board on rear wall
-  showShoeStorageAlcoves?: boolean; // Arched wooden footwear pigeonholes on rear wall
+  showShoeStorageAlcoves?: boolean; // Arched footwear pigeonholes on rear wall
+
+  // Contemporary Luxury Travertine & Walnut Mashrabiya (User Uploaded Reference Theme)
+  // Featuring 5 spaces between columns on both long walls
+  contemporaryMashrabiyaConfig?: {
+    showTimberPostAndBeamPortals?: boolean; // Rich walnut/oak post-and-beam portal casings
+    showArchedMashrabiyaWindows?: boolean; // Towering round-arched 12-point star geometric jali screens with daylight glow
+    showAshlarTravertineWalls?: boolean; // Honed cream travertine stone blocks with recessed ashlar joints
+    showFloatingBronzeCalligraphy?: boolean; // Sculpted 3D bronze Thuluth Quranic calligraphy with linear LED cove wash
+    showModernBrassSconces?: boolean; // Pierced geometric star brass wall sconces casting light patterns
+    showLowQuranBookshelves?: boolean; // Built-in floor-level timber bookshelves for Holy Qurans
+    showCoveLighting?: boolean; // Continuous warm LED cove wash lighting along upper timber header
+    fiveBaysBetweenColumns?: boolean; // 5 spaces between columns along long walls (default true)
+    woodFinishColor?: string; // e.g. '#3b2416' or '#4a2f1c'
+  };
+
+  // Persian Iwan Specific Architectural Details for the Three Side Walls
+  persianIwanConfig?: {
+    showMuqarnasVaulting?: boolean; // 3-tiered corbeled stalactite muqarnas in iwan vaults
+    showHaftRangiTiles?: boolean; // Persian 7-color cobalt & turquoise floral mosaic tiles
+    showPersianKatibehFrieze?: boolean; // Continuous upper Thuluth calligraphy ribbon on lapis field
+    showOrosiStainedGlass?: boolean; // Jewel-toned Persian stained glass & 12-point star Girih lattice
+    showTaqchehQuranAlcoves?: boolean; // Recessed Quran niches with illuminated Mushaf & Rehal
+    showPersianLamps?: boolean; // Pierced brass filigree lanterns with warm ambient glow
+    showMarbleIzareh?: boolean; // Polished alabaster/marble lower wainscot with turquoise relief
+    iwanNicheDepthM?: number; // Depth of iwan recess (default 0.38m)
+    accentColor?: string; // Persian turquoise / cobalt accent
+  };
 }
 
 export interface RoomConfig {
@@ -185,6 +217,11 @@ export interface ArchitecturalCustomData {
   sourceFileName?: string;
   modelFormat?: 'image-cutout' | 'obj' | 'parametric';
   objData?: string;
+  // For images and decals pasted onto interior walls
+  isPastedImage?: boolean;
+  frameStyle?: 'frameless' | 'walnut-frame' | 'gold-frame' | 'black-frame' | 'backlit-floating';
+  attachedWall?: WallDirection | 'custom-wall' | 'custom-partition' | 'freestanding';
+  elevationOffFloor?: number;
 }
 
 export interface FurnitureCatalogItem {
@@ -372,6 +409,8 @@ export type WindowDrawStyle =
 
 export type WallDrawStyle =
   | 'custom-masonry-wall'
+  | 'travertine-ashlar-wall'
+  | 'walnut-timber-wall'
   | 'drywall-partition'
   | 'glass-steel-partition'
   | 'fluted-wood-divider'

@@ -30,6 +30,7 @@ import { FolderProductPickerModal } from './components/FolderProductPickerModal'
 import { ProjectManagerModal } from './components/ProjectManagerModal';
 import { WallManagerModal } from './components/WallManagerModal';
 import { OfficeStructuralGridModal } from './components/OfficeStructuralGridModal';
+import { ImagePasterModal } from './components/ImagePasterModal';
 import { CADDrawingPalette } from './components/CADDrawingPalette';
 import { CADFloorPlanOverlay } from './components/CADFloorPlanOverlay';
 import { PlacementOptionsModal } from './components/PlacementOptionsModal';
@@ -151,6 +152,7 @@ export default function App() {
   const [isArchitecturalToolsOpen, setIsArchitecturalToolsOpen] = useState(false);
   const [isWallManagerOpen, setIsWallManagerOpen] = useState(false);
   const [isOfficeGridOpen, setIsOfficeGridOpen] = useState(false);
+  const [isImagePasterOpen, setIsImagePasterOpen] = useState(false);
   const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -204,24 +206,27 @@ export default function App() {
   // -------------------------------------------------------------
   // Furniture Operations
   // -------------------------------------------------------------
-  const handleAddItem = (catalogItem: FurnitureCatalogItem) => {
-    // Generate placement near center with slight randomized offset
-    const offsetX = (Math.random() - 0.5) * 1.2;
-    const offsetZ = (Math.random() - 0.5) * 1.2;
-    const elevation = catalogItem.elevationOffset || 0;
-
-    const newItem: PlacedFurnitureItem = {
-      id: `item-${Date.now()}`,
-      modelType: catalogItem.modelType,
-      name: catalogItem.name,
-      category: catalogItem.category,
-      position: [parseFloat(offsetX.toFixed(2)), elevation, parseFloat(offsetZ.toFixed(2))],
-      rotationY: 0,
-      dimensions: { ...catalogItem.dimensions },
-      color: catalogItem.defaultColor,
-      secondaryColor: catalogItem.secondaryColor,
-      price: catalogItem.price,
-    };
+  const handleAddItem = (item: FurnitureCatalogItem | PlacedFurnitureItem) => {
+    let newItem: PlacedFurnitureItem;
+    if ('position' in item) {
+      newItem = item;
+    } else {
+      const offsetX = (Math.random() - 0.5) * 1.2;
+      const offsetZ = (Math.random() - 0.5) * 1.2;
+      const elevation = item.elevationOffset || 0;
+      newItem = {
+        id: `item-${Date.now()}`,
+        modelType: item.modelType,
+        name: item.name,
+        category: item.category,
+        position: [parseFloat(offsetX.toFixed(2)), elevation, parseFloat(offsetZ.toFixed(2))],
+        rotationY: 0,
+        dimensions: { ...item.dimensions },
+        color: item.defaultColor,
+        secondaryColor: item.secondaryColor,
+        price: item.price,
+      };
+    }
 
     const updatedItems = [...items, newItem];
     setItems(updatedItems);
@@ -493,6 +498,9 @@ export default function App() {
         }
       } else if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'y') {
         handleRedo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'v') {
+        // Quick shortcut to open Image Paster Tool
+        setIsImagePasterOpen(true);
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedItemId) {
           handleDeleteItem(selectedItemId);
@@ -502,6 +510,7 @@ export default function App() {
         setIsRoomSettingsOpen(false);
         setIsWallManagerOpen(false);
         setIsOfficeGridOpen(false);
+        setIsImagePasterOpen(false);
         setIsTemplatesOpen(false);
         setIsAIStylistOpen(false);
         setIsBOMOpen(false);
@@ -855,6 +864,8 @@ export default function App() {
         onOpenRoomSettings={() => setIsRoomSettingsOpen(true)}
         onOpenWallManager={() => setIsWallManagerOpen(true)}
         onOpenOfficeGrid={() => setIsOfficeGridOpen(true)}
+        onOpenImagePaster={() => setIsImagePasterOpen(true)}
+        onOpenDrawWall={handleSwitchTo2DSketch}
         onOpenTemplates={() => setIsTemplatesOpen(true)}
         onOpenAIStylist={() => setIsAIStylistOpen(true)}
         onOpenBOM={() => setIsBOMOpen(true)}
@@ -934,6 +945,7 @@ export default function App() {
               showToast('Custom sketched walls cleared');
             }}
             onClosePalette={() => setIsCADDrawingActive(false)}
+            onOpenImagePaster={() => setIsImagePasterOpen(true)}
           />
         )}
 
@@ -1053,6 +1065,28 @@ export default function App() {
           setIsWallManagerOpen(false);
           setIsOfficeGridOpen(true);
         }}
+        onOpenImagePaster={() => {
+          setIsWallManagerOpen(false);
+          setIsImagePasterOpen(true);
+        }}
+        onSwitchTo2DDrawWall={handleSwitchTo2DSketch}
+      />
+
+      <ImagePasterModal
+        isOpen={isImagePasterOpen}
+        onClose={() => setIsImagePasterOpen(false)}
+        roomConfig={roomConfig}
+        placedItems={items}
+        onAddDirectItem={(item) => {
+          handleAddItem(item as any);
+          showToast('🖼️ Wall artwork mounted successfully into 3D scene');
+        }}
+        onStartCursorPlacement={(item, opts) => {
+          handleStartCursorPlacement(item, opts);
+          showToast('🎯 Move cursor in 3D scene and click wall to mount artwork');
+        }}
+        onRemoveItem={handleDeleteItem}
+        onSelectItem={(id) => setSelectedItemId(id)}
       />
 
       <OfficeStructuralGridModal
